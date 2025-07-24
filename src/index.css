@@ -1,0 +1,36 @@
+@import "remixicon/fonts/remixicon.css";
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply font-poppins bg-main-gradient text-white min-h-screen;
+}
+
+/* Custom styles for complex backgrounds and gradients */
+.hero-title,
+.about-title {
+  background: linear-gradient(45deg, #fff, #e0e7ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.header,
+.developer-info,
+.tech-stack,
+.game-header {
+  background: rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.mobile-nav {
+  background: rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(20px);
+}
+
+.game-over {
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(20px);
+}
