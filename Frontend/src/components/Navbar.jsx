@@ -16,7 +16,7 @@ const NavButton = ({
     ${
       isMobile
         ? "w-full text-left py-4 px-6 rounded-2xl flex items-center gap-4 hover:pl-8"
-        : "py-2 px-6 rounded-full"
+        : "py-2 px-3 rounded-full text-sm"
     }
     ${
       isActive
@@ -62,14 +62,16 @@ const UserMenu = ({ user, onLogout, isMobile = false }) => {
       <div className="border-t border-white/10 pt-4 mt-4">
         <div className="mb-4 px-6">
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-8 h-8 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center">
+            <div className="w-8 h-8 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
               <span className="text-white font-bold text-sm">
                 {user?.name?.charAt(0)?.toUpperCase() || "U"}
               </span>
             </div>
-            <div>
-              <p className="font-medium text-white">{user?.name || "User"}</p>
-              <p className="text-sm text-gray-400">{user?.email}</p>
+            <div className="min-w-0 flex-1">
+              <p className="font-medium text-white truncate">
+                {user?.name || "User"}
+              </p>
+              <p className="text-sm text-gray-400 truncate">{user?.email}</p>
             </div>
           </div>
         </div>
@@ -100,14 +102,16 @@ const UserMenu = ({ user, onLogout, isMobile = false }) => {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 py-2 px-4 rounded-full bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 hover:from-green-500/30 hover:to-emerald-500/30 transition-all duration-300"
+        className="flex items-center gap-2 py-2 px-3 rounded-full bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 hover:from-green-500/30 hover:to-emerald-500/30 transition-all duration-300"
       >
-        <div className="w-8 h-8 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center">
+        <div className="w-8 h-8 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
           <span className="text-white font-bold text-sm">
             {user?.name?.charAt(0)?.toUpperCase() || "U"}
           </span>
         </div>
-        <span className="text-white font-medium">{user?.name || "User"}</span>
+        <span className="text-white font-medium hidden xl:block max-w-32 truncate">
+          {user?.name || "User"}
+        </span>
         <i
           className={`ri-arrow-down-s-line transition-transform duration-200 ${
             isOpen ? "rotate-180" : ""
@@ -121,10 +125,14 @@ const UserMenu = ({ user, onLogout, isMobile = false }) => {
             className="fixed inset-0 z-40"
             onClick={() => setIsOpen(false)}
           ></div>
-          <div className="absolute right-0 top-full mt-2 w-56 bg-gray-900/95 backdrop-blur-sm border border-gray-700/50 rounded-2xl shadow-2xl z-50">
+          <div className="absolute right-0 top-full mt-2 w-72 bg-gray-900/95 backdrop-blur-sm border border-gray-700/50 rounded-2xl shadow-2xl z-50">
             <div className="p-4 border-b border-gray-700/50">
-              <p className="font-medium text-white">{user?.name || "User"}</p>
-              <p className="text-sm text-gray-400">{user?.email}</p>
+              <p className="font-medium text-white truncate">
+                {user?.name || "User"}
+              </p>
+              <p className="text-sm text-gray-400 truncate" title={user?.email}>
+                {user?.email}
+              </p>
             </div>
 
             {menuItems.map((item, index) => (
@@ -198,6 +206,7 @@ const Navbar = () => {
     { path: "/", label: "Home", icon: "ri-home-line" },
     { path: "/game", label: "Play", icon: "ri-gamepad-line" },
     { path: "/leaderboard", label: "Leaderboard", icon: "ri-trophy-line" },
+    { path: "/friends", label: "Friends", icon: "ri-group-line" },
     { path: "/about", label: "About", icon: "ri-information-line" },
   ];
 
@@ -226,7 +235,7 @@ const Navbar = () => {
       >
         <div className="max-w-7xl mx-auto flex justify-between items-center p-4">
           {/* Logo */}
-          <Link to="/" className="group flex items-center gap-3">
+          <Link to="/" className="group flex items-center gap-3 flex-shrink-0">
             <div className="text-3xl group-hover:animate-bounce">🐍</div>
             <div>
               <h1 className="text-2xl font-bold bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent">
@@ -239,8 +248,8 @@ const Navbar = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-6">
-            <div className="flex gap-2">
+          <nav className="hidden lg:flex items-center gap-4 flex-1 justify-center max-w-2xl">
+            <div className="flex gap-1">
               {navItems.map((item) => (
                 <NavButton
                   key={item.path}
@@ -251,34 +260,34 @@ const Navbar = () => {
                 />
               ))}
             </div>
-
-            {/* Auth Section */}
-            <div className="flex items-center gap-4 ml-4 pl-4 border-l border-white/20">
-              {isAuthenticated ? (
-                <UserMenu user={user} onLogout={handleLogout} />
-              ) : (
-                <div className="flex gap-2">
-                  <Link
-                    to="/login"
-                    className="py-2 px-6 rounded-full border-2 border-white/20 text-white hover:bg-white/10 hover:border-white/40 transition-all duration-300"
-                  >
-                    Login
-                  </Link>
-                  <Link
-                    to="/signup"
-                    className="py-2 px-6 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-medium hover:from-green-600 hover:to-emerald-700 transition-all duration-300 shadow-lg"
-                  >
-                    Sign Up
-                  </Link>
-                </div>
-              )}
-            </div>
           </nav>
+
+          {/* Auth Section */}
+          <div className="hidden lg:flex items-center gap-4 flex-shrink-0">
+            {isAuthenticated ? (
+              <UserMenu user={user} onLogout={handleLogout} />
+            ) : (
+              <div className="flex gap-2">
+                <Link
+                  to="/login"
+                  className="py-2 px-4 rounded-full border-2 border-white/20 text-white hover:bg-white/10 hover:border-white/40 transition-all duration-300 whitespace-nowrap text-sm"
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/signup"
+                  className="py-2 px-4 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-medium hover:from-green-600 hover:to-emerald-700 transition-all duration-300 shadow-lg whitespace-nowrap text-sm"
+                >
+                  Sign Up
+                </Link>
+              </div>
+            )}
+          </div>
 
           {/* Mobile Menu Button */}
           <button
             onClick={() => setMobileMenuOpen(true)}
-            className="md:hidden flex items-center justify-center bg-transparent border-2 border-white/30 w-12 h-12 rounded-xl hover:bg-white/10 hover:border-white/40 transition-all duration-300"
+            className="lg:hidden flex items-center justify-center bg-transparent border-2 border-white/30 w-12 h-12 rounded-xl hover:bg-white/10 hover:border-white/40 transition-all duration-300 flex-shrink-0"
           >
             <i className="ri-menu-line text-xl"></i>
           </button>

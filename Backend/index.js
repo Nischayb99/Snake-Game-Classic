@@ -5,10 +5,10 @@ import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import connectDB from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
+import friendRoutes from './routes/friendRoutes.js'; // Add this import
 import session from 'express-session';
 import passport from 'passport';
 import morgan from 'morgan';
-import friendRoutes from './routes/friendRoutes.js';
 dotenv.config();
 
 // Initialize express app
@@ -59,11 +59,12 @@ app.use(passport.session());
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/friends', friendRoutes); // Add this line
 
-// Friend routes
-app.use('/api/friends', friendRoutes);
-
-// ...other routes
+// Health check route
+app.get('/api/health', (req, res) => {
+  res.json({ success: true, message: 'Server is running' });
+});
 
 // Start server
 app.listen(PORT, () => {

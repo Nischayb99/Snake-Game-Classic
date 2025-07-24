@@ -18,6 +18,7 @@ const HomePage = React.lazy(() => import("./pages/HomePage"));
 const GamePage = React.lazy(() => import("./pages/GamePage"));
 const AboutPage = React.lazy(() => import("./pages/AboutPage"));
 const Leaderboard = React.lazy(() => import("./pages/Leaderboard"));
+const Friends = React.lazy(() => import("./pages/Friends"));
 const Dashboard = React.lazy(() => import("./pages/Dashboard"));
 const Login = React.lazy(() => import("./pages/authPages/Login"));
 const Signup = React.lazy(() => import("./pages/authPages/Signup"));
@@ -73,6 +74,14 @@ function App() {
               <Route path="/game" element={<GamePage />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/leaderboard" element={<Leaderboard />} />
+              <Route
+                path="/friends"
+                element={
+                  <ProtectedRoute>
+                    <Friends />
+                  </ProtectedRoute>
+                }
+              />
 
               {/* Auth Routes - Redirect if already logged in */}
               <Route
