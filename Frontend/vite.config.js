@@ -3,5 +3,9 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  base: './', // 👈 This fixes asset loading issues on Vercel
+  base: '/',  // Changed from './' to '/'
+  build: {
+    outDir: 'dist',  // Explicit output directory
+    emptyOutDir: true  // Clears dist folder before build
+  }
 })
