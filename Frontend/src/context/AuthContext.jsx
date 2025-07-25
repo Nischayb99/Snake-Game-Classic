@@ -21,10 +21,30 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const checkUserLoggedIn = async () => {
       try {
+        // Quick check for cached user first (for faster loading)
+        const cachedUser = sessionStorage.getItem("user");
+        if (cachedUser) {
+          try {
+            const userData = JSON.parse(cachedUser);
+            setUser(userData);
+          } catch (e) {
+            sessionStorage.removeItem("user");
+          }
+        }
+
+        // Then verify with backend
         const { user } = await authService.getCurrentUser();
         setUser(user);
+
+        // Cache user data
+        if (user) {
+          sessionStorage.setItem("user", JSON.stringify(user));
+        } else {
+          sessionStorage.removeItem("user");
+        }
       } catch (error) {
         setUser(null);
+        sessionStorage.removeItem("user");
       } finally {
         setLoading(false);
         setIsInitialized(true);
@@ -65,6 +85,8 @@ export const AuthProvider = ({ children }) => {
       const result = await authService.login(credentials);
       if (result.user) {
         setUser(result.user);
+        // Cache user data
+        sessionStorage.setItem("user", JSON.stringify(result.user));
         showNotification("success", "Login successfully");
         navigate("/");
         return { success: true };
@@ -85,6 +107,8 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       await authService.logout();
       setUser(null);
+      // Clear cached data
+      sessionStorage.removeItem("user");
       showNotification("success", "Logged out successfully");
       navigate("/");
       return { success: true };
@@ -104,6 +128,8 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       const { user: updatedUser } = await authService.updateProfile(userData);
       setUser(updatedUser);
+      // Update cached data
+      sessionStorage.setItem("user", JSON.stringify(updatedUser));
       return { success: true };
     } catch (error) {
       return { success: false, error: error.message };
@@ -127,13 +153,7 @@ export const AuthProvider = ({ children }) => {
     setSignupSuccess,
   };
 
-  if (!isInitialized) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
-      </div>
-    );
-  }
-
+  // Remove the loading spinner from here - let App.jsx handle it
+  // This allows splash screen to show first
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

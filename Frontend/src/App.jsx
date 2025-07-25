@@ -1,4 +1,4 @@
-import React, { useState, useCallback, Suspense } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import { useNotification } from "./context/NotificationContext";
@@ -7,11 +7,9 @@ import { useNotification } from "./context/NotificationContext";
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Notification from "./components/Notification";
-import LoadingSpinner, {
-  PageSpinner,
-  FullScreenSpinner,
-} from "./components/LoadingSpinner";
+import LoadingSpinner, { PageSpinner } from "./components/LoadingSpinner";
 import ErrorBoundary from "./components/ErrorBoundary";
+import SplashScreen from "./components/SplashScreen"; // Add your splash screen
 
 // Pages - Lazy loaded for better performance
 const HomePage = React.lazy(() => import("./pages/HomePage"));
@@ -35,21 +33,61 @@ const ResetPassword = React.lazy(() =>
 // Loading Component
 const PageLoader = () => <PageSpinner text="Loading page..." />;
 
-// App Loading Component
-const AppLoader = () => <FullScreenSpinner text="Loading application..." />;
-
 function App() {
-  const { loading, user, isAuthenticated } = useAuth();
+  const { loading, user, isAuthenticated, isInitialized } = useAuth();
   const { notification, clearNotification } = useNotification();
 
-  // Show loading screen while auth is initializing
-  if (loading) {
-    return <AppLoader />;
+  // Splash screen control
+  const [showSplash, setShowSplash] = useState(true);
+  const [appReady, setAppReady] = useState(false);
+
+  useEffect(() => {
+    // Check if splash was already shown in this session
+    const splashShown = sessionStorage.getItem("splashShown");
+
+    if (splashShown) {
+      // Skip splash screen
+      setShowSplash(false);
+    }
+  }, []);
+
+  // Handle when auth is ready and splash is complete
+  useEffect(() => {
+    if (isInitialized && !showSplash) {
+      // Small delay for smooth transition
+      setTimeout(() => {
+        setAppReady(true);
+      }, 100);
+    }
+  }, [isInitialized, showSplash]);
+
+  const handleSplashComplete = () => {
+    setShowSplash(false);
+    sessionStorage.setItem("splashShown", "true");
+
+    // If auth is already ready, show app immediately
+    if (isInitialized) {
+      setTimeout(() => {
+        setAppReady(true);
+      }, 100);
+    }
+  };
+
+  // Show splash screen first (only on first visit)
+  if (showSplash) {
+    return <SplashScreen onComplete={handleSplashComplete} />;
+  }
+
+  // Show blank screen while waiting for auth and app to be ready
+  if (!isInitialized || !appReady) {
+    return (
+      <div className="fixed inset-0 bg-gradient-to-br from-[#0b141a] via-[#0f1922] to-[#1a2332]" />
+    );
   }
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-[#0b141a] flex flex-col">
+      <div className="min-h-screen bg-[#0b141a] flex flex-col animate-fadeIn">
         {/* Navigation */}
         <Navbar />
 
@@ -181,6 +219,24 @@ function App() {
           </div>
         </footer>
       </div>
+
+      {/* Fade in animation */}
+      <style jsx>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .animate-fadeIn {
+          animation: fadeIn 0.5s ease-out;
+        }
+      `}</style>
     </ErrorBoundary>
   );
 }
