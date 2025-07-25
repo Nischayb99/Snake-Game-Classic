@@ -17,7 +17,7 @@ router.post("/reset-password", authController.resetPassword);
 // Google login start
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
-// Enhanced Google callback with better error handling
+// Enhanced Google callback with better error handling and production settings
 router.get('/google/callback',
   passport.authenticate('google', {
     failureRedirect: `${process.env.PRODUCTION_FRONTEND_URL || process.env.LOCALHOST_FRONTEND_URL}/login?error=oauth_failed`,
@@ -37,19 +37,24 @@ router.get('/google/callback',
         { expiresIn: config.jwt.expiresIn }
       );
 
-      // Set cookie with enhanced options
+      // Enhanced cookie settings for production
+      const cookieOptions = {
+        ...config.jwt.cookieOptions,
+        secure: process.env.NODE_ENV === 'production', // HTTPS only in production
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // Cross-site for production
+        domain: process.env.NODE_ENV === 'production' ? undefined : 'localhost' // Let browser handle domain in production
+      };
+
+      // Set cookie
       res.cookie(
         config.jwt.cookieName,
         token,
-        {
-          ...config.jwt.cookieOptions,
-          sameSite: 'lax', // Better for cross-site cookies
-          secure: process.env.NODE_ENV === 'production'
-        }
+        cookieOptions
       );
 
       // Redirect to profile with success indication
       const frontendUrl = getFrontendUrl(req);
+      console.log('OAuth Success - Redirecting to:', `${frontendUrl}/profile?welcome=google`);
       res.redirect(`${frontendUrl}/profile?welcome=google`);
 
     } catch (error) {

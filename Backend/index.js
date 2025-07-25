@@ -15,6 +15,9 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Trust proxy for Render deployment
+app.set('trust proxy', 1);
+
 // Connect to MongoDB
 connectDB();
 
@@ -57,11 +60,14 @@ app.use(cors({
 // Handle preflight requests
 app.options('*', cors());
 
-// Rate limiting for auth routes
+// Rate limiting for auth routes with trust proxy
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 200, // max 200 requests per window per IP
-  message: { success: false, message: 'Too many attempts, please try again later.' }
+  message: { success: false, message: 'Too many attempts, please try again later.' },
+  standardHeaders: true, // Return rate limit info in headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  trustProxy: true // Trust the reverse proxy
 });
 app.use('/api/auth/', authLimiter);
 
