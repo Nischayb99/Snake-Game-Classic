@@ -71,6 +71,12 @@ function Signup() {
     }
   };
 
+  const handleGoogleSignup = () => {
+    showNotification("info", "Redirecting to Google...");
+    // Use the direct backend URL for Google OAuth
+    window.location.href = `${import.meta.env.VITE_API_URL}/auth/google`;
+  };
+
   if (signupSuccess) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0b141a] via-[#0f1922] to-[#1a2332]">
@@ -266,8 +272,8 @@ function Signup() {
           </div>
 
           <div className="mt-6">
-            <a
-              href={import.meta.env.VITE_GOOGLE_AUTH_URL}
+            <button
+              onClick={handleGoogleSignup}
               className="w-full flex items-center justify-center px-4 py-3 border border-gray-600 rounded-lg bg-white hover:bg-gray-50 text-gray-900 font-medium transition"
             >
               <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
@@ -289,7 +295,7 @@ function Signup() {
                 />
               </svg>
               Continue with Google
-            </a>
+            </button>
           </div>
         </div>
       </div>

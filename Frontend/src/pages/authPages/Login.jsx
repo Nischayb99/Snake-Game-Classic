@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useNotification } from "../../context/NotificationContext";
 
@@ -7,7 +7,34 @@ const Login = () => {
   const { login, loading, error, clearError } = useAuth();
   const { showNotification } = useNotification();
   const [formData, setFormData] = useState({ email: "", password: "" });
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+
+  // Handle OAuth callback parameters
+  useEffect(() => {
+    const error = searchParams.get("error");
+
+    if (error) {
+      switch (error) {
+        case "oauth_failed":
+          showNotification("error", "Google login was cancelled or failed");
+          break;
+        case "auth_failed":
+          showNotification("error", "Authentication failed. Please try again.");
+          break;
+        case "server_error":
+          showNotification(
+            "error",
+            "Server error during login. Please try again."
+          );
+          break;
+        default:
+          showNotification("error", "Login failed. Please try again.");
+      }
+      // Clean up URL
+      window.history.replaceState({}, document.title, "/login");
+    }
+  }, [searchParams, showNotification]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -29,7 +56,7 @@ const Login = () => {
 
       if (result.success) {
         showNotification("success", "Login successful!");
-        navigate("/");
+        navigate("/profile");
       } else {
         showNotification(
           "error",
@@ -42,6 +69,12 @@ const Login = () => {
         error.message || "An unexpected error occurred. Please try again."
       );
     }
+  };
+
+  const handleGoogleLogin = () => {
+    showNotification("info", "Redirecting to Google...");
+    // Use the direct backend URL for Google OAuth
+    window.location.href = `${import.meta.env.VITE_API_URL}/auth/google`;
   };
 
   return (
@@ -170,8 +203,8 @@ const Login = () => {
           </div>
 
           <div className="mt-6">
-            <a
-              href={import.meta.env.VITE_GOOGLE_AUTH_URL}
+            <button
+              onClick={handleGoogleLogin}
               className="w-full flex items-center justify-center px-4 py-3 border border-gray-600 rounded-lg bg-white hover:bg-gray-50 text-gray-900 font-medium transition"
             >
               <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
@@ -193,7 +226,7 @@ const Login = () => {
                 />
               </svg>
               Continue with Google
-            </a>
+            </button>
           </div>
         </div>
       </div>

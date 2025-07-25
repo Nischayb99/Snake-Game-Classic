@@ -12,10 +12,24 @@ function Profile() {
   const [loadingStats, setLoadingStats] = useState(true);
 
   useEffect(() => {
+    // Handle Google OAuth welcome message
+    const searchParams = new URLSearchParams(window.location.search);
+    const welcome = searchParams.get("welcome");
+
+    if (welcome === "google") {
+      showNotification(
+        "success",
+        "Welcome to Snake Game! Google login successful."
+      );
+      // Clean up URL
+      window.history.replaceState({}, document.title, "/profile");
+    }
+
+    // Fetch game stats if user is authenticated
     if (isAuthenticated && user) {
       fetchGameStats();
     }
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, showNotification]);
 
   const fetchGameStats = async () => {
     try {
@@ -60,6 +74,11 @@ function Profile() {
       month: "short",
       day: "numeric",
     });
+  };
+
+  const handleLeaderboardClick = () => {
+    // Navigate to leaderboard page instead of opening API endpoint
+    navigate("/leaderboard");
   };
 
   if (!isAuthenticated && !loading) {
@@ -372,12 +391,7 @@ function Profile() {
                       </div>
                     </button>
                     <button
-                      onClick={() =>
-                        window.open(
-                          `${import.meta.env.VITE_API_URL}/auth/leaderboard`,
-                          "_blank"
-                        )
-                      }
+                      onClick={handleLeaderboardClick}
                       className="flex items-center gap-3 p-4 bg-[#334155] hover:bg-[#3f4b5f] rounded-lg transition-colors text-left"
                     >
                       <i className="ri-trophy-line text-yellow-400 text-xl"></i>

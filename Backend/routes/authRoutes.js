@@ -1,5 +1,5 @@
 import express from 'express';
-import passport  from 'passport';
+import passport from 'passport';
 const router = express.Router();
 import authController from '../controllers/authController.js';
 import { protect } from '../middleware/authMiddleware.js';
@@ -17,21 +17,46 @@ router.post("/reset-password", authController.resetPassword);
 // Google login start
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
-// Google callback
+// Enhanced Google callback with better error handling
 router.get('/google/callback',
-  passport.authenticate('google', { failureRedirect: '/login' }),
+  passport.authenticate('google', {
+    failureRedirect: `${process.env.PRODUCTION_FRONTEND_URL || process.env.LOCALHOST_FRONTEND_URL}/login?error=oauth_failed`,
+    session: false
+  }),
   (req, res) => {
-    const token = jwt.sign(
-      { id: req.user._id },
-      process.env.JWT_SECRET,
-      { expiresIn: config.jwt.expiresIn }
-    );
-    res.cookie(
-      config.jwt.cookieName,
-      token,
-      config.jwt.cookieOptions
-    );
-    res.redirect(`${getFrontendUrl(req)}/profile`);
+    try {
+      if (!req.user) {
+        console.error('No user found in Google OAuth callback');
+        return res.redirect(`${getFrontendUrl(req)}/login?error=auth_failed`);
+      }
+
+      // Generate JWT token
+      const token = jwt.sign(
+        { id: req.user._id },
+        process.env.JWT_SECRET,
+        { expiresIn: config.jwt.expiresIn }
+      );
+
+      // Set cookie with enhanced options
+      res.cookie(
+        config.jwt.cookieName,
+        token,
+        {
+          ...config.jwt.cookieOptions,
+          sameSite: 'lax', // Better for cross-site cookies
+          secure: process.env.NODE_ENV === 'production'
+        }
+      );
+
+      // Redirect to profile with success indication
+      const frontendUrl = getFrontendUrl(req);
+      res.redirect(`${frontendUrl}/profile?welcome=google`);
+
+    } catch (error) {
+      console.error('Google OAuth callback error:', error);
+      const frontendUrl = getFrontendUrl(req);
+      res.redirect(`${frontendUrl}/login?error=server_error`);
+    }
   }
 );
 
