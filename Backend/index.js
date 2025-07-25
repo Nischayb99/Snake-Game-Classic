@@ -5,7 +5,7 @@ import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import connectDB from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
-import friendRoutes from './routes/friendRoutes.js'; // Add this import
+import friendRoutes from './routes/friendRoutes.js';
 import session from 'express-session';
 import passport from 'passport';
 import morgan from 'morgan';
@@ -57,13 +57,50 @@ app.use(session({ secret: 'your_secret', resave: false, saveUninitialized: true 
 app.use(passport.initialize());
 app.use(passport.session());
 
+// Root route - Welcome message
+app.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Snake Game API Server',
+    version: '1.0.0',
+    endpoints: {
+      health: '/api/health',
+      auth: '/api/auth/*',
+      friends: '/api/friends/*',
+      leaderboard: '/api/auth/leaderboard'
+    },
+    documentation: 'Visit /api/health to check server status'
+  });
+});
+
 // Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/friends', friendRoutes); // Add this line
+app.use('/api/friends', friendRoutes);
 
 // Health check route
 app.get('/api/health', (req, res) => {
-  res.json({ success: true, message: 'Server is running' });
+  res.json({
+    success: true,
+    message: 'Server is running',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    mongodb: 'Connected'
+  });
+});
+
+// 404 handler for undefined routes
+app.use('*', (req, res) => {
+  res.status(404).json({
+    success: false,
+    message: `Route ${req.originalUrl} not found`,
+    availableRoutes: [
+      'GET /',
+      'GET /api/health',
+      'POST /api/auth/login',
+      'POST /api/auth/signup',
+      'GET /api/auth/leaderboard'
+    ]
+  });
 });
 
 // Start server

@@ -1,6 +1,6 @@
 import express from 'express';
 import { protect } from '../middleware/authMiddleware.js';
-import friendController from '../controllers/friendontroller.js';
+import friendController from '../controllers/friendController.js';
 
 const router = express.Router();
 
