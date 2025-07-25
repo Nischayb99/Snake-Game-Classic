@@ -3,9 +3,14 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  base: '/',  // Changed from './' to '/'
+  base: '/',
   build: {
-    outDir: 'dist',  // Explicit output directory
-    emptyOutDir: true  // Clears dist folder before build
+    outDir: 'dist',
+    emptyOutDir: true
+  },
+  preview: {
+    port: 3000,
+    strictPort: true,
+    host: true
   }
 })
