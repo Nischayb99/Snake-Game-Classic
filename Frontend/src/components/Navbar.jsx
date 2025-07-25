@@ -12,11 +12,11 @@ const NavButton = ({
   onClick,
 }) => {
   const baseClasses = `
-    transition-all duration-300 ease-in-out border-2 font-medium
+    group transition-all duration-300 ease-in-out border-2 font-medium relative overflow-hidden
     ${
       isMobile
-        ? "w-full text-left py-4 px-6 rounded-2xl flex items-center gap-4 hover:pl-8"
-        : "py-2 px-3 rounded-full text-sm"
+        ? "w-full text-left py-3 sm:py-4 px-4 sm:px-6 rounded-xl sm:rounded-2xl flex items-center gap-3 sm:gap-4 hover:pl-6 sm:hover:pl-8"
+        : "py-2 px-3 sm:px-4 rounded-full text-sm sm:text-base"
     }
     ${
       isActive
@@ -28,16 +28,22 @@ const NavButton = ({
   if (isMobile) {
     return (
       <button onClick={onClick} className={baseClasses}>
-        <i className={`${icon} text-xl`}></i>
-        <span>{label}</span>
-        {isActive && <i className="ri-check-line ml-auto text-green-400"></i>}
+        <div className="absolute inset-0 bg-gradient-to-r from-green-500/10 to-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+        <i
+          className={`${icon} text-lg sm:text-xl relative z-10 group-hover:scale-110 transition-transform duration-300`}
+        ></i>
+        <span className="relative z-10 text-sm sm:text-base">{label}</span>
+        {isActive && (
+          <i className="ri-check-line ml-auto text-green-400 relative z-10 group-hover:scale-110 transition-transform duration-300"></i>
+        )}
       </button>
     );
   }
 
   return (
     <Link to={to} className={baseClasses}>
-      <span>{label}</span>
+      <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+      <span className="relative z-10">{label}</span>
     </Link>
   );
 };
@@ -47,9 +53,9 @@ const UserMenu = ({ user, onLogout, isMobile = false }) => {
   const navigate = useNavigate();
 
   const menuItems = [
+    { icon: "ri-dashboard-line", label: "Dashboard", path: "/dashboard" },
     { icon: "ri-user-line", label: "Profile", path: "/profile" },
     { icon: "ri-settings-line", label: "Settings", path: "/edit-profile" },
-    { icon: "ri-dashboard-line", label: "Dashboard", path: "/dashboard" },
   ];
 
   const handleMenuClick = (path) => {
@@ -60,18 +66,20 @@ const UserMenu = ({ user, onLogout, isMobile = false }) => {
   if (isMobile) {
     return (
       <div className="border-t border-white/10 pt-4 mt-4">
-        <div className="mb-4 px-6">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-8 h-8 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
-              <span className="text-white font-bold text-sm">
+        <div className="mb-4 px-4 sm:px-6">
+          <div className="flex items-center gap-3 mb-3 p-3 bg-green-500/10 rounded-xl border border-green-500/20">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg">
+              <span className="text-white font-bold text-sm sm:text-base">
                 {user?.name?.charAt(0)?.toUpperCase() || "U"}
               </span>
             </div>
             <div className="min-w-0 flex-1">
-              <p className="font-medium text-white truncate">
+              <p className="font-semibold text-white truncate text-sm sm:text-base">
                 {user?.name || "User"}
               </p>
-              <p className="text-sm text-gray-400 truncate">{user?.email}</p>
+              <p className="text-xs sm:text-sm text-gray-400 truncate">
+                {user?.email}
+              </p>
             </div>
           </div>
         </div>
@@ -80,19 +88,21 @@ const UserMenu = ({ user, onLogout, isMobile = false }) => {
           <button
             key={index}
             onClick={() => handleMenuClick(item.path)}
-            className="w-full text-left py-3 px-6 flex items-center gap-4 text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-200"
+            className="group w-full text-left py-3 px-4 sm:px-6 flex items-center gap-3 sm:gap-4 text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-300 rounded-lg mx-2 sm:mx-4 mb-1"
           >
-            <i className={`${item.icon} text-lg`}></i>
-            {item.label}
+            <i
+              className={`${item.icon} text-base sm:text-lg group-hover:scale-110 group-hover:text-green-400 transition-all duration-300`}
+            ></i>
+            <span className="text-sm sm:text-base">{item.label}</span>
           </button>
         ))}
 
         <button
           onClick={onLogout}
-          className="w-full text-left py-3 px-6 flex items-center gap-4 text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all duration-200 border-t border-white/10 mt-4"
+          className="group w-full text-left py-3 px-4 sm:px-6 flex items-center gap-3 sm:gap-4 text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all duration-300 border-t border-white/10 mt-4 rounded-none"
         >
-          <i className="ri-logout-box-line text-lg"></i>
-          Logout
+          <i className="ri-logout-box-line text-base sm:text-lg group-hover:scale-110 transition-transform duration-300"></i>
+          <span className="text-sm sm:text-base">Logout</span>
         </button>
       </div>
     );
@@ -102,18 +112,18 @@ const UserMenu = ({ user, onLogout, isMobile = false }) => {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 py-2 px-3 rounded-full bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 hover:from-green-500/30 hover:to-emerald-500/30 transition-all duration-300"
+        className="group flex items-center gap-2 py-2 px-3 rounded-full bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 hover:from-green-500/30 hover:to-emerald-500/30 transition-all duration-300 backdrop-blur-sm"
       >
-        <div className="w-8 h-8 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
-          <span className="text-white font-bold text-sm">
+        <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform duration-300">
+          <span className="text-white font-bold text-xs sm:text-sm">
             {user?.name?.charAt(0)?.toUpperCase() || "U"}
           </span>
         </div>
-        <span className="text-white font-medium hidden xl:block max-w-32 truncate">
+        <span className="text-white font-medium hidden xl:block max-w-24 lg:max-w-32 truncate text-sm">
           {user?.name || "User"}
         </span>
         <i
-          className={`ri-arrow-down-s-line transition-transform duration-200 ${
+          className={`ri-arrow-down-s-line transition-transform duration-200 text-sm ${
             isOpen ? "rotate-180" : ""
           }`}
         ></i>
@@ -125,34 +135,54 @@ const UserMenu = ({ user, onLogout, isMobile = false }) => {
             className="fixed inset-0 z-40"
             onClick={() => setIsOpen(false)}
           ></div>
-          <div className="absolute right-0 top-full mt-2 w-72 bg-gray-900/95 backdrop-blur-sm border border-gray-700/50 rounded-2xl shadow-2xl z-50">
-            <div className="p-4 border-b border-gray-700/50">
-              <p className="font-medium text-white truncate">
-                {user?.name || "User"}
-              </p>
-              <p className="text-sm text-gray-400 truncate" title={user?.email}>
-                {user?.email}
-              </p>
+          <div className="absolute right-0 top-full mt-2 w-64 sm:w-72 bg-gray-900/95 backdrop-blur-md border border-gray-700/50 rounded-xl sm:rounded-2xl shadow-2xl z-50 overflow-hidden">
+            <div className="p-3 sm:p-4 border-b border-gray-700/50 bg-gradient-to-r from-green-500/5 to-emerald-500/5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg">
+                  <span className="text-white font-bold text-sm">
+                    {user?.name?.charAt(0)?.toUpperCase() || "U"}
+                  </span>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold text-white truncate text-sm sm:text-base">
+                    {user?.name || "User"}
+                  </p>
+                  <p
+                    className="text-xs sm:text-sm text-gray-400 truncate"
+                    title={user?.email}
+                  >
+                    {user?.email}
+                  </p>
+                </div>
+              </div>
             </div>
 
             {menuItems.map((item, index) => (
               <button
                 key={index}
                 onClick={() => handleMenuClick(item.path)}
-                className="w-full text-left py-3 px-4 flex items-center gap-3 text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-200 first:rounded-t-none last:rounded-b-2xl"
+                className="group w-full text-left py-3 px-3 sm:px-4 flex items-center gap-3 text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-300 relative overflow-hidden"
               >
-                <i className={`${item.icon} text-lg`}></i>
-                {item.label}
+                <div className="absolute inset-0 bg-gradient-to-r from-green-500/10 to-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <i
+                  className={`${item.icon} text-base sm:text-lg group-hover:scale-110 group-hover:text-green-400 transition-all duration-300 relative z-10`}
+                ></i>
+                <span className="text-sm sm:text-base relative z-10">
+                  {item.label}
+                </span>
               </button>
             ))}
 
             <div className="border-t border-gray-700/50">
               <button
                 onClick={onLogout}
-                className="w-full text-left py-3 px-4 flex items-center gap-3 text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all duration-200 rounded-b-2xl"
+                className="group w-full text-left py-3 px-3 sm:px-4 flex items-center gap-3 text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all duration-300 rounded-b-xl sm:rounded-b-2xl relative overflow-hidden"
               >
-                <i className="ri-logout-box-line text-lg"></i>
-                Logout
+                <div className="absolute inset-0 bg-red-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <i className="ri-logout-box-line text-base sm:text-lg group-hover:scale-110 transition-transform duration-300 relative z-10"></i>
+                <span className="text-sm sm:text-base relative z-10">
+                  Logout
+                </span>
               </button>
             </div>
           </div>
@@ -213,11 +243,11 @@ const Navbar = () => {
   if (loading) {
     return (
       <header className="sticky top-0 z-50 bg-[#0b141a]/80 backdrop-blur-md border-b border-white/10">
-        <div className="max-w-7xl mx-auto flex justify-between items-center p-4">
-          <div className="w-32 h-8 bg-gray-700 animate-pulse rounded"></div>
-          <div className="flex gap-4">
-            <div className="w-16 h-8 bg-gray-700 animate-pulse rounded-full"></div>
-            <div className="w-16 h-8 bg-gray-700 animate-pulse rounded-full"></div>
+        <div className="max-w-8xl mx-auto flex justify-between items-center p-3 sm:p-4">
+          <div className="w-24 sm:w-32 h-6 sm:h-8 bg-gray-700 animate-pulse rounded"></div>
+          <div className="flex gap-2 sm:gap-4">
+            <div className="w-12 sm:w-16 h-6 sm:h-8 bg-gray-700 animate-pulse rounded-full"></div>
+            <div className="w-12 sm:w-16 h-6 sm:h-8 bg-gray-700 animate-pulse rounded-full"></div>
           </div>
         </div>
       </header>
@@ -227,28 +257,38 @@ const Navbar = () => {
   return (
     <>
       <header
-        className={`sticky top-0 z-50 transition-all duration-300 ${
+        className={`sticky top-0 z-50 transition-all duration-500 ${
           isScrolled
-            ? "bg-[#0b141a]/95 backdrop-blur-md shadow-lg border-b border-green-500/20"
+            ? "bg-[#0b141a]/95 backdrop-blur-md shadow-2xl border-b border-green-500/20"
             : "bg-[#0b141a]/80 backdrop-blur-sm border-b border-white/10"
         }`}
       >
-        <div className="max-w-7xl mx-auto flex justify-between items-center p-4">
+        <div className="max-w-8xl mx-auto flex justify-between items-center p-3 sm:p-4">
           {/* Logo */}
-          <Link to="/" className="group flex items-center gap-3 flex-shrink-0">
-            <div className="text-3xl group-hover:animate-bounce">🐍</div>
-            <div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent">
+          <Link
+            to="/"
+            className="group flex items-center gap-2 sm:gap-3 flex-shrink-0"
+          >
+            <div className="text-2xl sm:text-3xl group-hover:animate-bounce transition-all duration-300">
+              🐍
+            </div>
+            <div className="hidden sm:block">
+              <h1 className="text-lg sm:text-xl lg:text-2xl font-bold bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent">
                 Snake Game
               </h1>
-              <div className="text-xs text-gray-400 -mt-1">
+              <div className="text-xs text-gray-400 -mt-1 hidden lg:block">
                 Classic Reimagined
               </div>
+            </div>
+            <div className="sm:hidden">
+              <h1 className="text-lg font-bold bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent">
+                Snake
+              </h1>
             </div>
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center gap-4 flex-1 justify-center max-w-2xl">
+          <nav className="hidden lg:flex items-center gap-1 flex-1 justify-center max-w-2xl">
             <div className="flex gap-1">
               {navItems.map((item) => (
                 <NavButton
@@ -263,22 +303,24 @@ const Navbar = () => {
           </nav>
 
           {/* Auth Section */}
-          <div className="hidden lg:flex items-center gap-4 flex-shrink-0">
+          <div className="hidden lg:flex items-center gap-3 flex-shrink-0">
             {isAuthenticated ? (
               <UserMenu user={user} onLogout={handleLogout} />
             ) : (
               <div className="flex gap-2">
                 <Link
                   to="/login"
-                  className="py-2 px-4 rounded-full border-2 border-white/20 text-white hover:bg-white/10 hover:border-white/40 transition-all duration-300 whitespace-nowrap text-sm"
+                  className="group py-2 px-3 sm:px-4 rounded-full border-2 border-white/20 text-white hover:bg-white/10 hover:border-white/40 transition-all duration-300 whitespace-nowrap text-sm backdrop-blur-sm relative overflow-hidden"
                 >
-                  Login
+                  <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                  <span className="relative z-10">Login</span>
                 </Link>
                 <Link
                   to="/signup"
-                  className="py-2 px-4 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-medium hover:from-green-600 hover:to-emerald-700 transition-all duration-300 shadow-lg whitespace-nowrap text-sm"
+                  className="group py-2 px-3 sm:px-4 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-medium hover:from-green-600 hover:to-emerald-700 transition-all duration-300 shadow-lg whitespace-nowrap text-sm relative overflow-hidden"
                 >
-                  Sign Up
+                  <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <span className="relative z-10">Sign Up</span>
                 </Link>
               </div>
             )}
@@ -287,16 +329,16 @@ const Navbar = () => {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setMobileMenuOpen(true)}
-            className="lg:hidden flex items-center justify-center bg-transparent border-2 border-white/30 w-12 h-12 rounded-xl hover:bg-white/10 hover:border-white/40 transition-all duration-300 flex-shrink-0"
+            className="group lg:hidden flex items-center justify-center bg-transparent border-2 border-white/30 w-10 h-10 sm:w-12 sm:h-12 rounded-xl hover:bg-white/10 hover:border-white/40 transition-all duration-300 flex-shrink-0 backdrop-blur-sm"
           >
-            <i className="ri-menu-line text-xl"></i>
+            <i className="ri-menu-line text-lg sm:text-xl group-hover:scale-110 transition-transform duration-300"></i>
           </button>
         </div>
       </header>
 
       {/* Mobile Menu Overlay */}
       <div
-        className={`fixed inset-0 z-[999] transition-all duration-300 ${
+        className={`fixed inset-0 z-[999] transition-all duration-500 ${
           isMobileMenuOpen ? "opacity-100 visible" : "opacity-0 invisible"
         }`}
       >
@@ -306,26 +348,31 @@ const Navbar = () => {
         ></div>
 
         <nav
-          className={`fixed top-0 right-0 h-full w-80 max-w-[90vw] bg-[#0b141a]/95 backdrop-blur-md border-l border-white/10 transition-transform duration-300 ${
+          className={`fixed top-0 right-0 h-full w-72 sm:w-80 max-w-[90vw] bg-[#0b141a]/95 backdrop-blur-md border-l border-white/10 transition-transform duration-500 ${
             isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
-          }`}
+          } overflow-y-auto`}
         >
           {/* Mobile Menu Header */}
-          <div className="flex justify-between items-center p-6 border-b border-white/10">
-            <div className="flex items-center gap-3">
-              <div className="text-2xl">🐍</div>
-              <span className="text-lg font-semibold text-white">Menu</span>
+          <div className="flex justify-between items-center p-4 sm:p-6 border-b border-white/10 bg-gradient-to-r from-green-500/5 to-emerald-500/5">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="text-xl sm:text-2xl">🐍</div>
+              <div>
+                <span className="text-base sm:text-lg font-semibold text-white">
+                  Snake Game
+                </span>
+                <div className="text-xs text-gray-400 -mt-1">Menu</div>
+              </div>
             </div>
             <button
               onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center justify-center border-2 border-white/30 w-10 h-10 rounded-xl hover:bg-white/10 transition-all duration-300"
+              className="group flex items-center justify-center border-2 border-white/30 w-8 h-8 sm:w-10 sm:h-10 rounded-xl hover:bg-white/10 transition-all duration-300 backdrop-blur-sm"
             >
-              <i className="ri-close-line text-lg"></i>
+              <i className="ri-close-line text-base sm:text-lg group-hover:scale-110 transition-transform duration-300"></i>
             </button>
           </div>
 
           {/* Mobile Navigation Links */}
-          <div className="p-6 space-y-2">
+          <div className="p-4 sm:p-6 space-y-2">
             {navItems.map((item) => (
               <NavButton
                 key={item.path}
@@ -339,25 +386,39 @@ const Navbar = () => {
           </div>
 
           {/* Mobile Auth Section */}
-          <div className="px-6">
+          <div className="px-4 sm:px-6">
             {isAuthenticated ? (
               <UserMenu user={user} onLogout={handleLogout} isMobile={true} />
             ) : (
-              <div className="space-y-3 border-t border-white/10 pt-6">
+              <div className="space-y-3 border-t border-white/10 pt-4 sm:pt-6">
                 <button
                   onClick={() => handleMobileNavigate("/login")}
-                  className="w-full py-4 px-6 rounded-2xl border-2 border-white/20 text-white font-medium hover:bg-white/10 transition-all duration-300"
+                  className="group w-full py-3 sm:py-4 px-4 sm:px-6 rounded-xl sm:rounded-2xl border-2 border-white/20 text-white font-medium hover:bg-white/10 transition-all duration-300 relative overflow-hidden backdrop-blur-sm"
                 >
-                  Login
+                  <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <span className="relative z-10 text-sm sm:text-base">
+                    Login
+                  </span>
                 </button>
                 <button
                   onClick={() => handleMobileNavigate("/signup")}
-                  className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-medium hover:from-green-600 hover:to-emerald-700 transition-all duration-300"
+                  className="group w-full py-3 sm:py-4 px-4 sm:px-6 rounded-xl sm:rounded-2xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-medium hover:from-green-600 hover:to-emerald-700 transition-all duration-300 relative overflow-hidden shadow-lg"
                 >
-                  Sign Up
+                  <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <span className="relative z-10 text-sm sm:text-base">
+                    Sign Up
+                  </span>
                 </button>
               </div>
             )}
+          </div>
+
+          {/* Mobile Menu Footer */}
+          <div className="p-4 sm:p-6 mt-auto border-t border-white/10 bg-gradient-to-r from-gray-900/20 to-black/20">
+            <div className="text-center text-xs sm:text-sm text-gray-400">
+              <p>Snake Game • Classic Reimagined</p>
+              <p className="mt-1">© 2024 All rights reserved</p>
+            </div>
           </div>
         </nav>
       </div>

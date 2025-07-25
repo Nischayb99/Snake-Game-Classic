@@ -363,7 +363,7 @@ const GamePage = () => {
     resetGame();
   }, [resetGame]);
 
-  const ControlButton = ({ dir, icon }) => (
+  const ControlButton = ({ dir, icon, className = "" }) => (
     <button
       onTouchStart={(e) => {
         e.preventDefault();
@@ -371,9 +371,11 @@ const GamePage = () => {
       }}
       onClick={() => !isGameOver && setDirection(dir)}
       disabled={isGameOver}
-      className="control-btn w-16 h-16 bg-white/20 border-2 border-white/30 rounded-2xl text-white text-2xl flex items-center justify-center transition-transform active:scale-90 active:bg-white/40 md:hidden disabled:opacity-50 disabled:cursor-not-allowed"
+      className={`group control-btn bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/40 rounded-xl sm:rounded-2xl text-white flex items-center justify-center transition-all duration-300 active:scale-90 active:bg-white/30 disabled:opacity-50 disabled:cursor-not-allowed backdrop-blur-sm ${className}`}
     >
-      <i className={icon}></i>
+      <i
+        className={`${icon} text-base sm:text-xl lg:text-2xl group-hover:scale-110 transition-transform duration-300`}
+      ></i>
     </button>
   );
 
@@ -388,104 +390,133 @@ const GamePage = () => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-64px)] bg-gradient-to-br from-[#0b141a] via-[#0f1922] to-[#1a2332] text-white">
-      <div className="w-full flex items-center justify-center p-4 sm:p-8">
-        <div className="max-w-4xl w-full">
-          <div className="game-header flex flex-col md:flex-row justify-between items-center mb-8 p-4 rounded-2xl gap-4">
-            <div className="flex gap-4 items-center">
+    <div className="min-h-screen bg-gradient-to-br from-[#0b141a] via-[#0f1922] to-[#1a2332] text-white relative overflow-x-hidden">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-green-500/5 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
+      </div>
+
+      <div className="w-full flex items-center justify-center p-3 sm:p-4 lg:p-8 relative z-10">
+        <div className="max-w-5xl w-full">
+          {/* Game Header */}
+          <div className="game-header flex flex-col sm:flex-row justify-between items-center mb-4 sm:mb-6 lg:mb-8 p-3 sm:p-4 rounded-xl lg:rounded-2xl gap-3 sm:gap-4 bg-white/5 backdrop-blur-sm border border-white/10">
+            <div className="flex gap-2 sm:gap-3 lg:gap-4 items-center w-full sm:w-auto justify-center sm:justify-start">
               <button
                 onClick={() => navigate("/")}
-                className="back-btn flex items-center gap-2 py-2 px-4 rounded-full border-2 border-white/30 hover:bg-white/10 transition-transform hover:-translate-y-px"
+                className="group back-btn flex items-center gap-1.5 sm:gap-2 py-2 px-3 sm:px-4 rounded-full border-2 border-white/30 hover:bg-white/10 transition-all duration-300 hover:-translate-y-px text-sm sm:text-base backdrop-blur-sm"
               >
-                <i className="ri-arrow-left-line"></i> Home
+                <i className="ri-arrow-left-line group-hover:scale-110 transition-transform duration-300"></i>
+                <span className="hidden sm:inline">Home</span>
+                <span className="sm:hidden">Back</span>
               </button>
               <button
                 onClick={() => setPaused((p) => !p)}
                 disabled={isGameOver}
-                className={`pause-btn flex items-center gap-2 py-2 px-4 rounded-full border-2 transition-transform hover:-translate-y-px disabled:opacity-50 disabled:cursor-not-allowed ${
+                className={`group pause-btn flex items-center gap-1.5 sm:gap-2 py-2 px-3 sm:px-4 rounded-full border-2 transition-all duration-300 hover:-translate-y-px disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base backdrop-blur-sm ${
                   isPaused
-                    ? "border-red-500/50 bg-red-500/30"
+                    ? "border-red-500/50 bg-red-500/20 hover:bg-red-500/30"
                     : "border-white/30 hover:bg-white/10"
                 }`}
               >
                 {isPaused ? (
                   <>
-                    <i className="ri-play-line"></i> Resume
+                    <i className="ri-play-line group-hover:scale-110 transition-transform duration-300"></i>
+                    <span className="hidden sm:inline">Resume</span>
+                    <span className="sm:hidden">Play</span>
                   </>
                 ) : (
                   <>
-                    <i className="ri-pause-line"></i> Pause
+                    <i className="ri-pause-line group-hover:scale-110 transition-transform duration-300"></i>
+                    <span className="hidden sm:inline">Pause</span>
+                    <span className="sm:hidden">Pause</span>
                   </>
                 )}
               </button>
             </div>
 
-            <div className="flex gap-6 text-lg font-semibold">
-              <span className="flex items-center gap-2">
-                <i className="ri-trophy-line text-yellow-400"></i>
-                Score: {score}
+            <div className="flex flex-wrap gap-3 sm:gap-4 lg:gap-6 text-sm sm:text-base lg:text-lg font-semibold justify-center">
+              <span className="flex items-center gap-1.5 sm:gap-2 bg-yellow-500/10 px-2 sm:px-3 py-1 rounded-full border border-yellow-500/20">
+                <i className="ri-trophy-line text-yellow-400 text-sm sm:text-base"></i>
+                <span className="hidden sm:inline">Score:</span>
+                <span className="sm:hidden">S:</span>
+                <span className="text-yellow-400">
+                  {score.toLocaleString()}
+                </span>
               </span>
-              <span className="flex items-center gap-2">
-                <i className="ri-star-line text-green-400"></i>
-                Best: {highScore}
+              <span className="flex items-center gap-1.5 sm:gap-2 bg-green-500/10 px-2 sm:px-3 py-1 rounded-full border border-green-500/20">
+                <i className="ri-star-line text-green-400 text-sm sm:text-base"></i>
+                <span className="hidden sm:inline">Best:</span>
+                <span className="sm:hidden">B:</span>
+                <span className="text-green-400">
+                  {highScore.toLocaleString()}
+                </span>
               </span>
               {isGameActive && (
-                <span className="flex items-center gap-2">
-                  <i className="ri-time-line text-blue-400"></i>
-                  {formatPlayTime()}
+                <span className="flex items-center gap-1.5 sm:gap-2 bg-blue-500/10 px-2 sm:px-3 py-1 rounded-full border border-blue-500/20">
+                  <i className="ri-time-line text-blue-400 text-sm sm:text-base"></i>
+                  <span className="text-blue-400">{formatPlayTime()}</span>
                 </span>
               )}
             </div>
           </div>
 
-          <div className="relative">
+          {/* Game Canvas Container */}
+          <div className="relative mb-4 sm:mb-6">
             <canvas
               ref={canvasRef}
               width={CANVAS_WIDTH}
               height={CANVAS_HEIGHT}
-              className="w-full h-auto border-4 border-white/30 rounded-2xl shadow-2xl"
+              className="w-full h-auto border-2 sm:border-4 border-white/30 rounded-xl sm:rounded-2xl shadow-2xl bg-gradient-to-br from-gray-900/50 to-black/50 backdrop-blur-sm"
             />
 
+            {/* Game Over Modal */}
             {isGameOver && (
-              <div className="game-over absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm rounded-2xl">
-                <div className="text-center p-8 bg-[#202c33] rounded-2xl border-2 border-white/20 shadow-2xl max-w-md w-full mx-4">
-                  <h2 className="text-3xl font-bold mb-4 text-red-400">
+              <div className="game-over absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm rounded-xl sm:rounded-2xl p-3 sm:p-4">
+                <div className="text-center p-4 sm:p-6 lg:p-8 bg-[#202c33]/95 backdrop-blur-sm rounded-xl sm:rounded-2xl border-2 border-white/20 shadow-2xl max-w-sm sm:max-w-md w-full mx-2 sm:mx-4">
+                  <h2 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-red-400 animate-pulse">
                     Game Over!
                   </h2>
 
-                  <div className="space-y-3 mb-6">
-                    <div className="flex justify-between items-center p-3 bg-[#2a3942] rounded-lg">
-                      <span className="text-gray-300">Final Score:</span>
-                      <span className="text-xl font-bold text-yellow-400">
-                        {score}
+                  <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
+                    <div className="flex justify-between items-center p-2 sm:p-3 bg-[#2a3942] rounded-lg">
+                      <span className="text-gray-300 text-sm sm:text-base">
+                        Final Score:
+                      </span>
+                      <span className="text-lg sm:text-xl font-bold text-yellow-400">
+                        {score.toLocaleString()}
                       </span>
                     </div>
 
-                    <div className="flex justify-between items-center p-3 bg-[#2a3942] rounded-lg">
-                      <span className="text-gray-300">Snake Length:</span>
-                      <span className="text-xl font-bold text-green-400">
+                    <div className="flex justify-between items-center p-2 sm:p-3 bg-[#2a3942] rounded-lg">
+                      <span className="text-gray-300 text-sm sm:text-base">
+                        Snake Length:
+                      </span>
+                      <span className="text-lg sm:text-xl font-bold text-green-400">
                         {currentSnakeLength}
                       </span>
                     </div>
 
-                    <div className="flex justify-between items-center p-3 bg-[#2a3942] rounded-lg">
-                      <span className="text-gray-300">Play Time:</span>
-                      <span className="text-xl font-bold text-blue-400">
+                    <div className="flex justify-between items-center p-2 sm:p-3 bg-[#2a3942] rounded-lg">
+                      <span className="text-gray-300 text-sm sm:text-base">
+                        Play Time:
+                      </span>
+                      <span className="text-lg sm:text-xl font-bold text-blue-400">
                         {formatPlayTime()}
                       </span>
                     </div>
 
                     {isNewHighScore && (
-                      <div className="p-3 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 rounded-lg">
-                        <p className="text-yellow-400 font-semibold animate-pulse">
+                      <div className="p-2 sm:p-3 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 rounded-lg animate-pulse">
+                        <p className="text-yellow-400 font-semibold text-sm sm:text-base">
                           🎉 New High Score! 🎉
                         </p>
                       </div>
                     )}
 
                     {!isAuthenticated && (
-                      <div className="p-3 bg-blue-500/20 border border-blue-500/30 rounded-lg">
-                        <p className="text-blue-300 text-sm">
+                      <div className="p-2 sm:p-3 bg-blue-500/20 border border-blue-500/30 rounded-lg">
+                        <p className="text-blue-300 text-xs sm:text-sm">
                           💡 <strong>Sign up</strong> to save your scores and
                           unlock achievements!
                         </p>
@@ -493,10 +524,10 @@ const GamePage = () => {
                     )}
 
                     {isSavingScore && (
-                      <div className="p-3 bg-green-500/20 border border-green-500/30 rounded-lg">
+                      <div className="p-2 sm:p-3 bg-green-500/20 border border-green-500/30 rounded-lg">
                         <div className="flex items-center justify-center gap-2">
-                          <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-green-400"></div>
-                          <span className="text-green-300 text-sm">
+                          <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-t-2 border-b-2 border-green-400"></div>
+                          <span className="text-green-300 text-xs sm:text-sm">
                             Saving game...
                           </span>
                         </div>
@@ -504,27 +535,33 @@ const GamePage = () => {
                     )}
                   </div>
 
-                  <div className="flex gap-3">
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                     <button
                       onClick={resetGame}
-                      className="flex-1 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white py-3 px-6 rounded-lg text-lg font-semibold transition-all duration-300 flex items-center justify-center gap-2 shadow-lg"
+                      className="group flex-1 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg text-sm sm:text-lg font-semibold transition-all duration-300 flex items-center justify-center gap-2 shadow-lg hover:scale-105 relative overflow-hidden"
                     >
-                      <i className="ri-refresh-line"></i> Play Again
+                      <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                      <i className="ri-refresh-line group-hover:scale-110 transition-transform duration-300 relative z-10"></i>
+                      <span className="relative z-10">Play Again</span>
                     </button>
 
                     {isAuthenticated ? (
                       <button
                         onClick={() => navigate("/profile")}
-                        className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white py-3 px-6 rounded-lg text-lg font-semibold transition-all duration-300 flex items-center justify-center gap-2 shadow-lg"
+                        className="group flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg text-sm sm:text-lg font-semibold transition-all duration-300 flex items-center justify-center gap-2 shadow-lg hover:scale-105 relative overflow-hidden"
                       >
-                        <i className="ri-user-line"></i> Profile
+                        <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                        <i className="ri-user-line group-hover:scale-110 transition-transform duration-300 relative z-10"></i>
+                        <span className="relative z-10">Profile</span>
                       </button>
                     ) : (
                       <button
                         onClick={() => navigate("/signup")}
-                        className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white py-3 px-6 rounded-lg text-lg font-semibold transition-all duration-300 flex items-center justify-center gap-2 shadow-lg"
+                        className="group flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg text-sm sm:text-lg font-semibold transition-all duration-300 flex items-center justify-center gap-2 shadow-lg hover:scale-105 relative overflow-hidden"
                       >
-                        <i className="ri-user-add-line"></i> Sign Up
+                        <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                        <i className="ri-user-add-line group-hover:scale-110 transition-transform duration-300 relative z-10"></i>
+                        <span className="relative z-10">Sign Up</span>
                       </button>
                     )}
                   </div>
@@ -532,37 +569,60 @@ const GamePage = () => {
               </div>
             )}
 
+            {/* Pause Modal */}
             {isPaused && !isGameOver && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm rounded-2xl">
-                <div className="text-center p-6 bg-[#202c33] rounded-xl border border-white/20">
-                  <h3 className="text-2xl font-bold mb-4">Game Paused</h3>
-                  <p className="text-gray-300 mb-4">
+              <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm rounded-xl sm:rounded-2xl">
+                <div className="text-center p-4 sm:p-6 bg-[#202c33]/95 backdrop-blur-sm rounded-xl border border-white/20 shadow-2xl max-w-sm w-full mx-4">
+                  <h3 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-blue-400">
+                    Game Paused
+                  </h3>
+                  <p className="text-gray-300 mb-3 sm:mb-4 text-sm sm:text-base">
                     Press SPACE or click Resume to continue
                   </p>
                   <button
                     onClick={() => setPaused(false)}
-                    className="bg-green-500 hover:bg-green-600 text-white py-2 px-6 rounded-lg font-semibold transition-colors"
+                    className="group bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-2 sm:py-3 px-4 sm:px-6 rounded-lg font-semibold transition-all duration-300 text-sm sm:text-base hover:scale-105 relative overflow-hidden"
                   >
-                    <i className="ri-play-line mr-2"></i>Resume
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                    <i className="ri-play-line mr-2 group-hover:scale-110 transition-transform duration-300 relative z-10"></i>
+                    <span className="relative z-10">Resume</span>
                   </button>
                 </div>
               </div>
             )}
           </div>
 
-          <p className="opacity-70 text-sm mt-4 text-center hidden md:block">
+          {/* Desktop Controls Info */}
+          <p className="opacity-70 text-xs sm:text-sm text-center hidden lg:block mb-4">
             Use arrow keys or WASD to control • SPACE to pause
           </p>
 
-          <div className="mt-8 flex flex-col items-center gap-2 md:hidden">
-            <ControlButton dir="UP" icon="ri-arrow-up-line" />
-            <div className="flex gap-2">
-              <ControlButton dir="LEFT" icon="ri-arrow-left-line" />
-              <ControlButton dir="DOWN" icon="ri-arrow-down-line" />
-              <ControlButton dir="RIGHT" icon="ri-arrow-right-line" />
+          {/* Mobile Controls */}
+          <div className="flex flex-col items-center gap-3 sm:gap-4 lg:hidden">
+            <ControlButton
+              dir="UP"
+              icon="ri-arrow-up-line"
+              className="w-12 h-12 sm:w-14 sm:h-14"
+            />
+            <div className="flex gap-3 sm:gap-4">
+              <ControlButton
+                dir="LEFT"
+                icon="ri-arrow-left-line"
+                className="w-12 h-12 sm:w-14 sm:h-14"
+              />
+              <ControlButton
+                dir="DOWN"
+                icon="ri-arrow-down-line"
+                className="w-12 h-12 sm:w-14 sm:h-14"
+              />
+              <ControlButton
+                dir="RIGHT"
+                icon="ri-arrow-right-line"
+                className="w-12 h-12 sm:w-14 sm:h-14"
+              />
             </div>
-            <p className="opacity-70 text-sm mt-4">
-              Use buttons to control the snake
+            <p className="opacity-70 text-xs sm:text-sm text-center mt-2">
+              Tap buttons to control the snake
             </p>
           </div>
         </div>
