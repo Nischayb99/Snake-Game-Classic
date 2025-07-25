@@ -23,27 +23,39 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(morgan('dev'));
 
-// CORS setup for development and production
+// Enhanced CORS setup for development and production
 const allowedOrigins = [
   process.env.PRODUCTION_FRONTEND_URL,
-  process.env.LOCALHOST_FRONTEND_URL
+  process.env.LOCALHOST_FRONTEND_URL,
+  'https://snake-game-classic.vercel.app', // Your Vercel deployment
+  'http://localhost:5173', // Local development
+  'http://localhost:3000', // Alternative local port
+  'https://snake-game-2-61m3.onrender.com' // Your backend domain (for self-requests)
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl)
+    // Allow requests with no origin (like mobile apps, Postman, or curl)
     if (!origin) return callback(null, true);
+
+    // Check if the origin is in the allowed list
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     } else {
+      console.error('CORS Error: Origin not allowed:', origin);
+      console.log('Allowed origins:', allowedOrigins);
       return callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'Accept'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'Accept', 'Origin', 'X-Requested-With'],
   exposedHeaders: ['set-cookie'],
+  optionsSuccessStatus: 200 // For legacy browser support
 }));
+
+// Handle preflight requests
+app.options('*', cors());
 
 // Rate limiting for auth routes
 const authLimiter = rateLimit({
@@ -53,7 +65,15 @@ const authLimiter = rateLimit({
 });
 app.use('/api/auth/', authLimiter);
 
-app.use(session({ secret: 'your_secret', resave: false, saveUninitialized: true }));
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'your_secret',
+  resave: false,
+  saveUninitialized: true,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production', // HTTPS in production
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
+}));
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -63,6 +83,7 @@ app.get('/', (req, res) => {
     success: true,
     message: 'Snake Game API Server',
     version: '1.0.0',
+    environment: process.env.NODE_ENV,
     endpoints: {
       health: '/api/health',
       auth: '/api/auth/*',
@@ -84,7 +105,8 @@ app.get('/api/health', (req, res) => {
     message: 'Server is running',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
-    mongodb: 'Connected'
+    mongodb: 'Connected',
+    environment: process.env.NODE_ENV
   });
 });
 
@@ -106,4 +128,6 @@ app.use('*', (req, res) => {
 // Start server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  console.log(`Environment: ${process.env.NODE_ENV}`);
+  console.log(`Allowed CORS origins: ${allowedOrigins.join(', ')}`);
 });
