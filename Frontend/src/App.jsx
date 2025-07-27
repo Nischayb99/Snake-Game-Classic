@@ -9,11 +9,12 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Notification from "./components/Notification";
 import LoadingSpinner, { PageSpinner } from "./components/LoadingSpinner";
 import ErrorBoundary from "./components/ErrorBoundary";
-import SplashScreen from "./components/SplashScreen"; // Add your splash screen
+import SplashScreen from "./components/SplashScreen"; 
 
 // Pages - Lazy loaded for better performance
 const HomePage = React.lazy(() => import("./pages/HomePage"));
 const GamePage = React.lazy(() => import("./pages/GamePage"));
+const Lobby = React.lazy(() => import("./pages/Lobby"));
 const AboutPage = React.lazy(() => import("./pages/AboutPage"));
 const Leaderboard = React.lazy(() => import("./pages/Leaderboard"));
 const Friends = React.lazy(() => import("./pages/Friends"));
@@ -29,6 +30,7 @@ const ForgotPassword = React.lazy(() =>
 const ResetPassword = React.lazy(() =>
   import("./pages/authPages/ResetPassword")
 );
+const Achievements = React.lazy(() => import("./pages/Achievements"));
 
 // Loading Component
 const PageLoader = () => <PageSpinner text="Loading page..." />;
@@ -110,8 +112,10 @@ function App() {
               {/* Public Routes */}
               <Route path="/" element={<HomePage />} />
               <Route path="/game" element={<GamePage />} />
+              <Route path="/lobby" element={<Lobby />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/leaderboard" element={<Leaderboard />} />
+              <Route path="/achievements" element={<Achievements />} />
               <Route
                 path="/friends"
                 element={
@@ -220,8 +224,8 @@ function App() {
         </footer>
       </div>
 
-      {/* Fade in animation */}
-      <style jsx>{`
+      {/* FIXED: Inline styles instead of jsx styled-jsx */}
+      <style>{`
         @keyframes fadeIn {
           from {
             opacity: 0;

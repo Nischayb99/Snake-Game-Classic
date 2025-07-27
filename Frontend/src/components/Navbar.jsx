@@ -10,6 +10,7 @@ const NavButton = ({
   isActive,
   isMobile = false,
   onClick,
+  badge = null,
 }) => {
   const baseClasses = `
     group transition-all duration-300 ease-in-out border-2 font-medium relative overflow-hidden
@@ -29,13 +30,20 @@ const NavButton = ({
     return (
       <button onClick={onClick} className={baseClasses}>
         <div className="absolute inset-0 bg-gradient-to-r from-green-500/10 to-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-        <i
-          className={`${icon} text-lg sm:text-xl relative z-10 group-hover:scale-110 transition-transform duration-300`}
-        ></i>
-        <span className="relative z-10 text-sm sm:text-base">{label}</span>
-        {isActive && (
-          <i className="ri-check-line ml-auto text-green-400 relative z-10 group-hover:scale-110 transition-transform duration-300"></i>
-        )}
+        <div className="relative flex items-center gap-3 sm:gap-4 flex-1">
+          <i
+            className={`${icon} text-lg sm:text-xl relative z-10 group-hover:scale-110 transition-transform duration-300`}
+          ></i>
+          <span className="relative z-10 text-sm sm:text-base">{label}</span>
+          {badge && (
+            <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full ml-auto animate-pulse">
+              {badge}
+            </span>
+          )}
+          {isActive && (
+            <i className="ri-check-line ml-auto text-green-400 relative z-10 group-hover:scale-110 transition-transform duration-300"></i>
+          )}
+        </div>
       </button>
     );
   }
@@ -43,7 +51,14 @@ const NavButton = ({
   return (
     <Link to={to} className={baseClasses}>
       <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-      <span className="relative z-10">{label}</span>
+      <span className="relative z-10 flex items-center gap-2">
+        {label}
+        {badge && (
+          <span className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full animate-pulse">
+            {badge}
+          </span>
+        )}
+      </span>
     </Link>
   );
 };
@@ -55,6 +70,9 @@ const UserMenu = ({ user, onLogout, isMobile = false }) => {
   const menuItems = [
     { icon: "ri-dashboard-line", label: "Dashboard", path: "/dashboard" },
     { icon: "ri-user-line", label: "Profile", path: "/profile" },
+    { icon: "ri-trophy-line", label: "Leaderboard", path: "/leaderboard" },
+    { icon: "ri-medal-line", label: "Achievements", path: "/achievements" },
+    { icon: "ri-group-line", label: "Friends", path: "/friends" },
     { icon: "ri-settings-line", label: "Settings", path: "/edit-profile" },
   ];
 
@@ -232,13 +250,34 @@ const Navbar = () => {
     setMobileMenuOpen(false);
   };
 
-  const navItems = [
-    { path: "/", label: "Home", icon: "ri-home-line" },
-    { path: "/game", label: "Play", icon: "ri-gamepad-line" },
-    { path: "/leaderboard", label: "Leaderboard", icon: "ri-trophy-line" },
-    { path: "/friends", label: "Friends", icon: "ri-group-line" },
-    { path: "/about", label: "About", icon: "ri-information-line" },
-  ];
+  // Updated navigation items - conditional based on auth status
+  const getNavItems = () => {
+    if (isAuthenticated) {
+      // Logged in users: Home, Lobby, Leaderboard, Friends, About
+      return [
+        { path: "/", label: "Home", icon: "ri-home-line" },
+        {
+          path: "/lobby",
+          label: "Lobby",
+          icon: "ri-gamepad-line",
+          priority: true,
+        },
+        { path: "/leaderboard", label: "Leaderboard", icon: "ri-trophy-line" },
+        { path: "/friends", label: "Friends", icon: "ri-group-line" },
+        { path: "/about", label: "About", icon: "ri-information-line" },
+      ];
+    } else {
+      // Non-logged in users: Home, Play, Leaderboard, About
+      return [
+        { path: "/", label: "Home", icon: "ri-home-line" },
+        { path: "/game", label: "Play", icon: "ri-play-fill", priority: true },
+        { path: "/leaderboard", label: "Leaderboard", icon: "ri-trophy-line" },
+        { path: "/about", label: "About", icon: "ri-information-line" },
+      ];
+    }
+  };
+
+  const navItems = getNavItems();
 
   if (loading) {
     return (
@@ -277,7 +316,7 @@ const Navbar = () => {
                 Snake Game
               </h1>
               <div className="text-xs text-gray-400 -mt-1 hidden lg:block">
-                Classic Reimagined
+                Ultimate Edition
               </div>
             </div>
             <div className="sm:hidden">
@@ -297,6 +336,7 @@ const Navbar = () => {
                   label={item.label}
                   icon={item.icon}
                   isActive={location.pathname === item.path}
+                  badge={item.priority && !isAuthenticated ? "New" : null}
                 />
               ))}
             </div>
@@ -381,6 +421,7 @@ const Navbar = () => {
                 isActive={location.pathname === item.path}
                 isMobile={true}
                 onClick={() => handleMobileNavigate(item.path)}
+                badge={item.priority && !isAuthenticated ? "New" : null}
               />
             ))}
           </div>
@@ -416,7 +457,7 @@ const Navbar = () => {
           {/* Mobile Menu Footer */}
           <div className="p-4 sm:p-6 mt-auto border-t border-white/10 bg-gradient-to-r from-gray-900/20 to-black/20">
             <div className="text-center text-xs sm:text-sm text-gray-400">
-              <p>Snake Game • Classic Reimagined</p>
+              <p>Snake Game • Ultimate Edition</p>
               <p className="mt-1">© 2024 All rights reserved</p>
             </div>
           </div>

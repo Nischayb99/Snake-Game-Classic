@@ -7,7 +7,7 @@ import jwt from 'jsonwebtoken';
 import config from '../config/config.js';
 import getFrontendUrl from '../utils/getFrontendUrl.js';
 
-// Auth routes
+// Public Auth routes
 router.post('/signup', authController.signup);
 router.get("/verify-email", authController.verifyEmail);
 router.post('/login', authController.login);
@@ -65,16 +65,23 @@ router.get('/google/callback',
   }
 );
 
-// Protected routes
+// Protected routes - User Management
 router.get('/logout', authController.logout);
 router.get('/me', protect, authController.getMe);
 router.put('/update-profile', protect, authController.updateProfile);
 
-// Game-related routes
+// Enhanced Game-related routes
 router.post('/save-game', protect, authController.saveGameScore);
 router.get('/game-stats', protect, authController.getGameStats);
+router.get('/achievements', protect, authController.getAchievements);
+router.put('/preferences', protect, authController.updatePreferences);
 
-// Public game routes
+// Session Management routes
+router.post('/start-session', protect, authController.startGameSession);
+router.post('/end-session', protect, authController.endGameSession);
+
+// Leaderboard and Ranking routes (Enhanced)
 router.get('/leaderboard', authController.getLeaderboard);
+router.get('/my-rank', protect, authController.getMyRank);
 
 export default router;

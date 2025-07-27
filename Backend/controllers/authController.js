@@ -47,10 +47,8 @@ passport.use(new GoogleStrategy({
   async (accessToken, refreshToken, profile, done) => {
     let user = await User.findOne({ email: profile.emails[0].value });
     if (!user) {
-      // Generate a unique username from display name
       let username = profile.displayName.replace(/\s+/g, '').toLowerCase();
 
-      // Check if username exists, if so, add random numbers
       let existingUser = await User.findOne({ username });
       if (existingUser) {
         username = username + Math.floor(Math.random() * 10000);
@@ -61,7 +59,7 @@ passport.use(new GoogleStrategy({
         username: username,
         email: profile.emails[0].value,
         isVerified: true,
-        password: Math.random().toString(36), // random password
+        password: Math.random().toString(36),
         avatar: profile.photos[0]?.value || '',
       });
     }
@@ -84,16 +82,13 @@ export const signup = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    // Generate username from name if not provided
     let username = name.replace(/\s+/g, '').toLowerCase();
 
-    // Check if username exists, if so, add random numbers
     let existingUser = await User.findOne({ username });
     if (existingUser) {
       username = username + Math.floor(Math.random() * 10000);
     }
 
-    // Check if user already exists (case-insensitive)
     const userExists = await User.findOne({
       $or: [
         { email: new RegExp(`^${email}$`, 'i') }
@@ -108,11 +103,9 @@ export const signup = async (req, res) => {
       });
     }
 
-    // Generate verification token
     const emailVerificationToken = crypto.randomBytes(32).toString("hex");
     const emailVerificationExpires = Date.now() + 1000 * 60 * 60 * 24; // 24 hours
 
-    // Create new user with verification fields
     const user = await User.create({
       name,
       username,
@@ -123,7 +116,6 @@ export const signup = async (req, res) => {
       emailVerificationExpires,
     });
 
-    // Send verification email
     const verifyLink = `${getFrontendUrl(req)}/verify-email?token=${emailVerificationToken}`;
     await sendVerificationEmail(email, verifyLink);
 
@@ -164,35 +156,43 @@ export const verifyEmail = async (req, res) => {
 };
 
 export const forgotPassword = async (req, res) => {
-  const { email } = req.body;
-  const user = await User.findOne({ email });
-  if (!user) return res.status(200).json({ success: true, message: "If that email exists, a reset link has been sent." });
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) return res.status(200).json({ success: true, message: "If that email exists, a reset link has been sent." });
 
-  const token = crypto.randomBytes(32).toString("hex");
-  user.resetPasswordToken = token;
-  user.resetPasswordExpires = Date.now() + 1000 * 60 * 60; // 1 hour
-  await user.save();
+    const token = crypto.randomBytes(32).toString("hex");
+    user.resetPasswordToken = token;
+    user.resetPasswordExpires = Date.now() + 1000 * 60 * 60; // 1 hour
+    await user.save();
 
-  const resetLink = `${getFrontendUrl(req)}/reset-password?token=${token}`;
-  await sendResetPasswordEmail(email, resetLink);
+    const resetLink = `${getFrontendUrl(req)}/reset-password?token=${token}`;
+    await sendResetPasswordEmail(email, resetLink);
 
-  res.json({ success: true, message: "If that email exists, a reset link has been sent." });
+    res.json({ success: true, message: "If that email exists, a reset link has been sent." });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
 };
 
 export const resetPassword = async (req, res) => {
-  const { token, password } = req.body;
-  const user = await User.findOne({
-    resetPasswordToken: token,
-    resetPasswordExpires: { $gt: Date.now() },
-  });
-  if (!user) return res.status(400).json({ success: false, message: "Invalid or expired token." });
+  try {
+    const { token, password } = req.body;
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+    if (!user) return res.status(400).json({ success: false, message: "Invalid or expired token." });
 
-  user.password = password;
-  user.resetPasswordToken = undefined;
-  user.resetPasswordExpires = undefined;
-  await user.save();
+    user.password = password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
 
-  res.json({ success: true, message: "Password reset successful!" });
+    res.json({ success: true, message: "Password reset successful!" });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
 };
 
 /**
@@ -204,7 +204,6 @@ export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Check if email and password are provided
     if (!email || !password) {
       return res.status(400).json({
         success: false,
@@ -212,10 +211,8 @@ export const login = async (req, res) => {
       });
     }
 
-    // Find user by email and explicitly select password field
     const user = await User.findOne({ email }).select('+password');
 
-    // Check if user exists and password is correct
     if (!user || !(await user.comparePassword(password))) {
       return res.status(401).json({
         success: false,
@@ -223,16 +220,13 @@ export const login = async (req, res) => {
       });
     }
 
-    // Check if email is verified
     if (!user.isVerified) {
       return res.status(403).json({ success: false, message: "Please verify your email before logging in." });
     }
 
-    // Generate JWT token and send as cookie
     const token = generateToken(user);
     sendTokenCookie(res, token);
 
-    // Send user data (without password)
     res.status(200).json({
       success: true,
       user: {
@@ -243,6 +237,8 @@ export const login = async (req, res) => {
         avatar: user.avatar,
         bio: user.bio,
         gameStats: user.gameStats,
+        preferences: user.preferences,
+        social: user.social,
         createdAt: user.createdAt
       },
       message: 'Login successful',
@@ -263,7 +259,6 @@ export const login = async (req, res) => {
  */
 export const logout = async (req, res) => {
   try {
-    // Clear the auth cookie with same options as set
     res.clearCookie(config.jwt.cookieName, config.jwt.cookieOptions);
 
     res.status(200).json({
@@ -286,7 +281,6 @@ export const logout = async (req, res) => {
  */
 export const getMe = async (req, res) => {
   try {
-    // User is already attached to req by the protect middleware
     const { password, ...safeUser } = req.user._doc || req.user;
     res.status(200).json({
       success: true,
@@ -311,7 +305,6 @@ export const updateProfile = async (req, res) => {
     const { name, username, email, avatar, bio } = req.body;
     const userId = req.user._id;
 
-    // Check if username or email already exists for another user
     const existingUser = await User.findOne({
       $and: [
         { _id: { $ne: userId } },
@@ -331,7 +324,6 @@ export const updateProfile = async (req, res) => {
       });
     }
 
-    // Update user profile
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       {
@@ -366,24 +358,26 @@ export const updateProfile = async (req, res) => {
 };
 
 /**
- * @Description    Save game score and update stats
+ * @Description    Enhanced save game score with comprehensive data
  * @Route   POST /api/auth/save-game
  * @Access  Private
  */
 export const saveGameScore = async (req, res) => {
   try {
-    const { score, snakeLength, playTime } = req.body;
+    const gameData = req.body;
     const userId = req.user._id;
 
-    // Validate input
-    if (typeof score !== 'number' || typeof snakeLength !== 'number' || typeof playTime !== 'number') {
+    // Enhanced validation for all game data fields
+    const requiredFields = ['score', 'snakeLength', 'playTime'];
+    const missingFields = requiredFields.filter(field => typeof gameData[field] !== 'number');
+
+    if (missingFields.length > 0) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid game data'
+        message: `Missing or invalid required fields: ${missingFields.join(', ')}`
       });
     }
 
-    // Find user and update game stats
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({
@@ -392,20 +386,22 @@ export const saveGameScore = async (req, res) => {
       });
     }
 
-    // Update game stats
-    user.updateGameStats({ score, snakeLength, playTime });
+    // Update comprehensive game stats
+    user.updateGameStats(gameData);
 
     // Check for new achievements
     const newAchievements = user.checkAchievements();
 
-    // Save user
     await user.save();
 
     res.json({
       success: true,
       message: 'Game score saved successfully',
       gameStats: user.gameStats,
-      newAchievements
+      newAchievements,
+      achievementPoints: newAchievements.reduce((sum, achievement) => sum + achievement.points, 0),
+      userLevel: Math.floor(user.gameStats.totalGamesPlayed / 10) + 1,
+      nextLevelProgress: (user.gameStats.totalGamesPlayed % 10) * 10
     });
 
   } catch (error) {
@@ -418,14 +414,14 @@ export const saveGameScore = async (req, res) => {
 };
 
 /**
- * @Description    Get user game statistics
+ * @Description    Get enhanced user game statistics
  * @Route   GET /api/auth/game-stats
  * @Access  Private
  */
 export const getGameStats = async (req, res) => {
   try {
     const userId = req.user._id;
-    const user = await User.findById(userId).select('gameStats recentGames');
+    const user = await User.findById(userId).select('gameStats recentGames achievements preferences');
 
     if (!user) {
       return res.status(404).json({
@@ -434,10 +430,36 @@ export const getGameStats = async (req, res) => {
       });
     }
 
+    // Calculate additional derived statistics
+    const derivedStats = {
+      totalAchievementPoints: user.achievements.reduce((sum, a) => sum + (a.points || 0), 0),
+      achievementCount: user.achievements.length,
+      userLevel: Math.floor(user.gameStats.totalGamesPlayed / 10) + 1,
+      experiencePoints: user.gameStats.totalGamesPlayed * 10,
+      nextLevelProgress: (user.gameStats.totalGamesPlayed % 10) * 10,
+      playStreaks: {
+        current: user.gameStats.currentStreak,
+        best: user.gameStats.bestStreak
+      },
+      playDaysCount: user.gameStats.playDays ? user.gameStats.playDays.length : 0,
+      averageScorePerDay: user.gameStats.playDays && user.gameStats.playDays.length > 0
+        ? Math.round(user.gameStats.totalScore / user.gameStats.playDays.length)
+        : 0,
+      recentPerformance: user.recentGames.slice(-5).map(game => ({
+        score: game.score,
+        efficiency: game.efficiency,
+        playTime: game.playTime,
+        playedAt: game.playedAt
+      }))
+    };
+
     res.json({
       success: true,
       gameStats: user.gameStats,
-      recentGames: user.recentGames
+      recentGames: user.recentGames,
+      achievements: user.achievements,
+      derivedStats,
+      preferences: user.preferences
     });
 
   } catch (error) {
@@ -450,26 +472,296 @@ export const getGameStats = async (req, res) => {
 };
 
 /**
- * @Description    Get leaderboard
+ * @Description    Get user achievements
+ * @Route   GET /api/auth/achievements
+ * @Access  Private
+ */
+export const getAchievements = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const user = await User.findById(userId).select('achievements gameStats');
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Group achievements by category
+    const achievementsByCategory = user.achievements.reduce((acc, achievement) => {
+      if (!acc[achievement.category]) {
+        acc[achievement.category] = [];
+      }
+      acc[achievement.category].push(achievement);
+      return acc;
+    }, {});
+
+    // Calculate achievement progress
+    const totalPossibleAchievements = 25; // Based on your achievement rules
+    const totalPoints = user.achievements.reduce((sum, a) => sum + (a.points || 0), 0);
+
+    res.json({
+      success: true,
+      achievements: user.achievements,
+      achievementsByCategory,
+      progress: {
+        totalUnlocked: user.achievements.length,
+        totalPossible: totalPossibleAchievements,
+        percentage: Math.round((user.achievements.length / totalPossibleAchievements) * 100),
+        totalPoints,
+        recentlyUnlocked: user.achievements
+          .sort((a, b) => new Date(b.unlockedAt) - new Date(a.unlockedAt))
+          .slice(0, 5)
+      }
+    });
+
+  } catch (error) {
+    console.error('Get achievements error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get achievements'
+    });
+  }
+};
+
+/**
+ * @Description    Update user preferences
+ * @Route   PUT /api/auth/preferences
+ * @Access  Private
+ */
+export const updatePreferences = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const preferences = req.body;
+
+    // Validate preference fields
+    const allowedPreferences = [
+      'soundEnabled', 'notificationsEnabled', 'difficultySetting',
+      'preferredDeviceType', 'gameTheme', 'showHints', 'autoSave'
+    ];
+
+    const validPreferences = {};
+    Object.keys(preferences).forEach(key => {
+      if (allowedPreferences.includes(key)) {
+        validPreferences[`preferences.${key}`] = preferences[key];
+      }
+    });
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $set: validPreferences },
+      { new: true, select: 'preferences' }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Preferences updated successfully',
+      preferences: updatedUser.preferences
+    });
+
+  } catch (error) {
+    console.error('Update preferences error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update preferences'
+    });
+  }
+};
+
+/**
+ * @Description    Start a game session
+ * @Route   POST /api/auth/start-session
+ * @Access  Private
+ */
+export const startGameSession = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { sessionId, deviceType, browserInfo } = req.body;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    const session = user.startSession({
+      sessionId,
+      deviceType,
+      browserInfo
+    });
+
+    await user.save();
+
+    res.json({
+      success: true,
+      message: 'Game session started',
+      session
+    });
+
+  } catch (error) {
+    console.error('Start session error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to start session'
+    });
+  }
+};
+
+/**
+ * @Description    End a game session
+ * @Route   POST /api/auth/end-session
+ * @Access  Private
+ */
+export const endGameSession = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { sessionId } = req.body;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    const session = user.endSession(sessionId);
+    await user.save();
+
+    res.json({
+      success: true,
+      message: 'Game session ended',
+      session
+    });
+
+  } catch (error) {
+    console.error('End session error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to end session'
+    });
+  }
+};
+
+/**
+ * @Description    Get enhanced leaderboard with multiple categories
  * @Route   GET /api/auth/leaderboard
  * @Access  Public
  */
 export const getLeaderboard = async (req, res) => {
   try {
-    const { limit = 10, type = 'highestScore' } = req.query;
+    const { limit = 10, type = 'highestScore', timeframe = 'all' } = req.query;
 
     let sortField = 'gameStats.highestScore';
-    if (type === 'totalGames') sortField = 'gameStats.totalGamesPlayed';
-    if (type === 'totalScore') sortField = 'gameStats.totalScore';
+    let matchCondition = { 'gameStats.totalGamesPlayed': { $gt: 0 } };
 
-    const leaderboard = await User.find({ 'gameStats.totalGamesPlayed': { $gt: 0 } })
-      .select('name username avatar gameStats.highestScore gameStats.totalGamesPlayed gameStats.totalScore')
-      .sort({ [sortField]: -1 })
-      .limit(parseInt(limit));
+    // Handle different leaderboard types
+    switch (type) {
+      case 'totalGames':
+        sortField = 'gameStats.totalGamesPlayed';
+        break;
+      case 'totalScore':
+        sortField = 'gameStats.totalScore';
+        break;
+      case 'winRate':
+        sortField = 'gameStats.winRate';
+        matchCondition['gameStats.totalGamesPlayed'] = { $gte: 5 }; // Minimum games for win rate
+        break;
+      case 'efficiency':
+        sortField = 'gameStats.bestEfficiency';
+        break;
+      case 'longestSnake':
+        sortField = 'gameStats.longestSnake';
+        break;
+      case 'achievements':
+        sortField = 'achievements';
+        break;
+      default:
+        sortField = 'gameStats.highestScore';
+    }
+
+    // Handle timeframe filtering
+    if (timeframe !== 'all') {
+      const now = new Date();
+      let startDate;
+
+      switch (timeframe) {
+        case 'daily':
+          startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          break;
+        case 'weekly':
+          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          break;
+        case 'monthly':
+          startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+          break;
+      }
+
+      if (startDate) {
+        matchCondition['gameStats.lastPlayedAt'] = { $gte: startDate };
+      }
+    }
+
+    let pipeline = [
+      { $match: matchCondition }
+    ];
+
+    // Special handling for achievements leaderboard
+    if (type === 'achievements') {
+      pipeline.push(
+        { $addFields: { achievementCount: { $size: '$achievements' } } },
+        { $sort: { achievementCount: -1, 'gameStats.highestScore': -1 } }
+      );
+    } else {
+      pipeline.push({ $sort: { [sortField]: -1 } });
+    }
+
+    pipeline.push(
+      { $limit: parseInt(limit) },
+      {
+        $project: {
+          // FIXED: Use only inclusion (1) OR only exclusion (0), not both
+          name: 1,
+          username: 1,
+          avatar: 1,
+          'gameStats.highestScore': 1,
+          'gameStats.totalGamesPlayed': 1,
+          'gameStats.totalScore': 1,
+          'gameStats.winRate': 1,
+          'gameStats.bestEfficiency': 1,
+          'gameStats.longestSnake': 1,
+          'gameStats.lastPlayedAt': 1,
+          createdAt: 1,
+          // FIXED: Include achievementCount instead of excluding it
+          ...(type === 'achievements' && { achievementCount: 1 })
+        }
+      }
+    );
+
+    const leaderboard = await User.aggregate(pipeline);
+
+    // Add rank to each user
+    const rankedLeaderboard = leaderboard.map((user, index) => ({
+      ...user,
+      rank: index + 1
+    }));
 
     res.json({
       success: true,
-      leaderboard
+      leaderboard: rankedLeaderboard,
+      type,
+      timeframe,
+      total: rankedLeaderboard.length
     });
 
   } catch (error) {
@@ -477,6 +769,60 @@ export const getLeaderboard = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to get leaderboard'
+    });
+  }
+};
+
+/**
+ * @Description    Get user's rank in leaderboard
+ * @Route   GET /api/auth/my-rank
+ * @Access  Private
+ */
+export const getMyRank = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { type = 'highestScore' } = req.query;
+
+    let sortField = 'gameStats.highestScore';
+    switch (type) {
+      case 'totalScore':
+        sortField = 'gameStats.totalScore';
+        break;
+      case 'totalGames':
+        sortField = 'gameStats.totalGamesPlayed';
+        break;
+      case 'winRate':
+        sortField = 'gameStats.winRate';
+        break;
+    }
+
+    const userRank = await User.aggregate([
+      { $match: { 'gameStats.totalGamesPlayed': { $gt: 0 } } },
+      { $sort: { [sortField]: -1 } },
+      { $group: { _id: null, users: { $push: '$_id' } } },
+      { $unwind: { path: '$users', includeArrayIndex: 'rank' } },
+      { $match: { users: userId } },
+      { $project: { rank: { $add: ['$rank', 1] } } }
+    ]);
+
+    const totalUsers = await User.countDocuments({ 'gameStats.totalGamesPlayed': { $gt: 0 } });
+
+    const rank = userRank.length > 0 ? userRank[0].rank : null;
+    const percentile = rank ? Math.round(((totalUsers - rank) / totalUsers) * 100) : 0;
+
+    res.json({
+      success: true,
+      rank,
+      totalUsers,
+      percentile,
+      type
+    });
+
+  } catch (error) {
+    console.error('Get user rank error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get user rank'
     });
   }
 };
@@ -492,5 +838,10 @@ export default {
   updateProfile,
   saveGameScore,
   getGameStats,
-  getLeaderboard
+  getAchievements,
+  updatePreferences,
+  startGameSession,
+  endGameSession,
+  getLeaderboard,
+  getMyRank
 };
