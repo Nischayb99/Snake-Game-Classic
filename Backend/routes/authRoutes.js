@@ -6,9 +6,10 @@ import { protect } from '../middleware/authMiddleware.js';
 import jwt from 'jsonwebtoken';
 import config from '../config/config.js';
 import getFrontendUrl from '../utils/getFrontendUrl.js';
+import { validateUserData, validateGameData } from '../utils/validators.js';
 
 // Public Auth routes
-router.post('/signup', authController.signup);
+router.post('/signup', validateUserData, authController.signup);
 router.get("/verify-email", authController.verifyEmail);
 router.post('/login', authController.login);
 router.post("/forgot-password", authController.forgotPassword);
@@ -71,7 +72,7 @@ router.get('/me', protect, authController.getMe);
 router.put('/update-profile', protect, authController.updateProfile);
 
 // Enhanced Game-related routes
-router.post('/save-game', protect, authController.saveGameScore);
+router.post('/save-game', protect, validateGameData, authController.saveGameScore);
 router.get('/game-stats', protect, authController.getGameStats);
 router.get('/achievements', protect, authController.getAchievements);
 router.put('/preferences', protect, authController.updatePreferences);

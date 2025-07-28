@@ -222,6 +222,17 @@ userSchema.methods.updateGameStats = function (gameData) {
     gameEvents = 0
   } = gameData;
 
+  // Validate input data
+  if (typeof score !== 'number' || score < 0) {
+    throw new Error('Invalid score data');
+  }
+  if (typeof snakeLength !== 'number' || snakeLength < 1) {
+    throw new Error('Invalid snake length data');
+  }
+  if (typeof playTime !== 'number' || playTime < 1) {
+    throw new Error('Invalid play time data');
+  }
+
   // Update basic stats
   if (score > this.gameStats.highestScore) {
     this.gameStats.highestScore = score;
@@ -250,28 +261,32 @@ userSchema.methods.updateGameStats = function (gameData) {
   this.gameStats.averagePlayTime = Math.round(this.gameStats.totalPlayTime / this.gameStats.totalGamesPlayed);
 
   // Update efficiency
-  const currentEfficiency = moveCount > 0 ? score / moveCount : 0;
+  const currentEfficiency = moveCount > 0 ? Number((score / moveCount).toFixed(2)) : 0;
   if (currentEfficiency > this.gameStats.bestEfficiency) {
     this.gameStats.bestEfficiency = currentEfficiency;
   }
 
-  // Update device stats
-  if (this.gameStats.deviceStats[deviceType]) {
-    this.gameStats.deviceStats[deviceType].games += 1;
-    if (score > this.gameStats.deviceStats[deviceType].bestScore) {
-      this.gameStats.deviceStats[deviceType].bestScore = score;
-    }
+  // Update device stats safely
+  const deviceKey = ['mobile', 'tablet', 'desktop'].includes(deviceType) ? deviceType : 'desktop';
+  if (!this.gameStats.deviceStats[deviceKey]) {
+    this.gameStats.deviceStats[deviceKey] = { games: 0, bestScore: 0 };
+  }
+
+  this.gameStats.deviceStats[deviceKey].games += 1;
+  if (score > this.gameStats.deviceStats[deviceKey].bestScore) {
+    this.gameStats.deviceStats[deviceKey].bestScore = score;
   }
 
   // Update power-up statistics
   powerUpsCollected.forEach(powerUp => {
-    if (this.gameStats.powerUpsByType[powerUp.type]) {
+    if (powerUp.type && this.gameStats.powerUpsByType[powerUp.type] !== undefined) {
       this.gameStats.powerUpsByType[powerUp.type] += 1;
     }
   });
 
   // Update win/loss stats
-  if (endReason === 'completed' || score >= 1000) { // Define win condition
+  const isWin = endReason === 'completed' || score >= 1000;
+  if (isWin) {
     this.gameStats.gamesWon += 1;
     this.gameStats.currentStreak += 1;
     if (this.gameStats.currentStreak > this.gameStats.bestStreak) {
@@ -286,14 +301,21 @@ userSchema.methods.updateGameStats = function (gameData) {
   this.gameStats.winRate = Math.round((this.gameStats.gamesWon / this.gameStats.totalGamesPlayed) * 100);
 
   // Track unique play days
-  const today = new Date().toDateString();
-  const playDayExists = this.gameStats.playDays.some(date => date.toDateString() === today);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Reset to start of day
+
+  const playDayExists = this.gameStats.playDays.some(date => {
+    const playDay = new Date(date);
+    playDay.setHours(0, 0, 0, 0);
+    return playDay.getTime() === today.getTime();
+  });
+
   if (!playDayExists) {
-    this.gameStats.playDays.push(new Date());
+    this.gameStats.playDays.push(today);
   }
 
-  // Add to recent games with enhanced data
-  this.recentGames.push({
+  // Add to recent games with size limit
+  const gameRecord = {
     score,
     snakeLength,
     playTime,
@@ -306,15 +328,17 @@ userSchema.methods.updateGameStats = function (gameData) {
     efficiency: currentEfficiency,
     gameLevel,
     endReason,
-    deviceType,
+    deviceType: deviceKey,
     lives,
     usedInvincibility,
     averageFPS,
     inputLatency,
     gameEvents
-  });
+  };
 
-  // Keep only last 20 games (increased from 10)
+  this.recentGames.push(gameRecord);
+
+  // ✅ FIXED: Properly maintain array size
   if (this.recentGames.length > 20) {
     this.recentGames = this.recentGames.slice(-20);
   }
