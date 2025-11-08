@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { useNotification } from "../context/NotificationContext";
 import { cacheManager } from "../utils/cacheManager";
 import { gameAnalytics } from "../utils/gameAnalytics";
+import { Helmet } from "react-helmet";
 
 // Enhanced Game Configuration
 const GAME_CONFIG = {
@@ -1271,13 +1272,19 @@ const GamePage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0b141a] via-[#0f1922] to-[#1a2332] text-white relative overflow-x-hidden">
-      {/* Animated Background Elements */}
+      <Helmet>
+        <title>Game | Snake Game Ultimate Edition</title>
+        <meta
+          name="description"
+          content="Play Snake Game Ultimate Edition and enjoy the classic gameplay with modern features."
+        />
+      </Helmet>
+      ;{/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-green-500/5 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
         <div className="absolute top-1/2 left-1/2 w-60 h-60 bg-purple-500/3 rounded-full blur-3xl animate-pulse delay-500"></div>
       </div>
-
       <div className="w-full flex items-center justify-center p-3 sm:p-4 lg:p-8 relative z-10">
         <div className="max-w-5xl w-full">
           {/* Enhanced Game Header */}

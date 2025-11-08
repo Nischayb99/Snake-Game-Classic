@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useNotification } from "../../context/NotificationContext";
+import { Helmet } from "react-helmet";
 
 // Enhanced StatCard with animations and better data display
 const StatCard = ({
@@ -441,6 +442,13 @@ function Profile() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0b141a] via-[#0f1922] to-[#1a2332] pt-4 sm:pt-6 lg:pt-8 relative overflow-x-hidden">
+      <Helmet>
+        <title>Profile | Snake Game Ultimate Edition</title>
+        <meta
+          name="description"
+          content="View and edit your profile in Snake Game Ultimate Edition."
+        />
+      </Helmet>
       {/* Enhanced Animated Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-60 h-60 sm:w-80 sm:h-80 bg-green-500/8 rounded-full blur-3xl animate-pulse"></div>

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useNotification } from "../context/NotificationContext";
 import LoadingSpinner from "../components/LoadingSpinner";
+import { Helmet } from "react-helmet";
 
 const Lobby = () => {
   const navigate = useNavigate();
@@ -117,6 +118,13 @@ const Lobby = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0b141a] via-[#0f1922] to-[#1a2332] text-white">
+      <Helmet>
+        <title>Lobby | Snake Game Ultimate Edition</title>
+        <meta
+          name="description"
+          content="Join the lobby and prepare for an exciting game of Snake!"
+        />
+      </Helmet>
       {/* Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-green-500/10 rounded-full blur-3xl animate-pulse"></div>

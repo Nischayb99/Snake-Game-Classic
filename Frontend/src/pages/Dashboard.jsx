@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useNotification } from "../context/NotificationContext";
+import { Helmet } from "react-helmet";
 
 // Enhanced StatCard with trends and interactions
 const StatCard = ({
@@ -835,6 +836,13 @@ const Dashboard = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0b141a] via-[#0f1922] to-[#1a2332] px-4">
+        <Helmet>
+          <title>Dashboard | Snake Game Ultimate Edition</title>
+          <meta
+            name="description"
+            content="Play Snake Game Ultimate Edition and enjoy the classic gameplay with modern features."
+          />
+        </Helmet>
         <div className="text-center">
           <div className="relative mb-6">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500 mx-auto"></div>

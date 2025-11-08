@@ -1,9 +1,7 @@
-// Enhanced Leaderboard.jsx with new backend features
-
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import UserProfileModal from "../components/UserProfileModal";
-
+import { Helmet } from "react-helmet";
 const Leaderboard = () => {
   const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -281,6 +279,13 @@ const Leaderboard = () => {
   return (
     <>
       <div className="min-h-screen bg-gradient-to-br from-[#0b141a] via-[#0f1922] to-[#1a2332] pt-4 sm:pt-8">
+        <Helmet>
+          <title>Leaderboard | Snake Game Ultimate Edition</title>
+          <meta
+            name="description"
+            content="See how you rank against other players in Snake Game Ultimate Edition. Check out the top scores, most games played, win rates, and more!"
+          />
+        </Helmet>
         <div className="max-w-6xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-8">
           {/* Enhanced Header */}
           <div className="text-center mb-6 sm:mb-8">

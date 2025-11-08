@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet";
 
 const LinkButton = ({ href, icon, text, variant = "primary" }) => {
   const baseClasses =
@@ -324,7 +325,14 @@ const AboutPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0b141a] via-[#0f1922] to-[#1a2332] text-white relative overflow-x-hidden">
-      {/* Enhanced Animated Background */}
+      <Helmet>
+        <title>About | Snake Game Ultimate Edition</title>
+        <meta
+          name="description"
+          content="Learn more about Snake Game Ultimate Edition."
+        />
+      </Helmet>
+      ;{/* Enhanced Animated Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-green-500/10 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
@@ -346,7 +354,6 @@ const AboutPage = () => {
           </div>
         ))}
       </div>
-
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-6 sm:py-8 lg:py-12 relative z-10">
         {/* Enhanced Hero Section */}
         <div className="text-center mb-10 sm:mb-12 lg:mb-16">
@@ -992,7 +999,6 @@ const AboutPage = () => {
           </div>
         </div>
       </div>
-
       <style>{`
         @keyframes fade-in {
           from {

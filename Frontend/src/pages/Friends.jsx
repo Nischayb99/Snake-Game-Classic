@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNotification } from "../context/NotificationContext";
 import UserProfileModal from "../components/UserProfileModal";
+import { Helmet } from "react-helmet";
 
 const Friends = () => {
   // State management
@@ -440,6 +441,13 @@ const Friends = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0b141a] via-[#0f1922] to-[#1a2332] pt-4 sm:pt-8">
+      <Helmet>
+        <title>Friends | Snake Game Ultimate Edition</title>
+        <meta
+          name="description"
+          content="Connect with friends and see their achievements in Snake Game Ultimate Edition."
+        />
+      </Helmet>
       <div className="max-w-6xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-8">
         {/* Enhanced Header with Stats */}
         <div className="text-center mb-6 sm:mb-8">

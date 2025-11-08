@@ -8,6 +8,7 @@ import {
   ENHANCED_ACHIEVEMENTS,
 } from "../utils/achievements";
 import LoadingSpinner from "../components/LoadingSpinner";
+import { Helmet } from "react-helmet";
 
 const Achievements = () => {
   const navigate = useNavigate();
@@ -275,6 +276,13 @@ const Achievements = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0b141a] via-[#0f1922] to-[#1a2332] text-white">
+      <Helmet>
+        <title>Achievements | Snake Game Ultimate Edition</title>
+        <meta
+          name="description"
+          content="See your unlocked achievements in Snake Game Classic."
+        />
+      </Helmet>
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-6 sm:py-8">
         {/* Header */}
         <div className="text-center mb-8">

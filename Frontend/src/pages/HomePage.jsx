@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { useNotification } from "../context/NotificationContext";
 import HowToPlayModal from "../components/HowToPlayModal";
 import LoadingSpinner from "../components/LoadingSpinner";
+import { Helmet } from "react-helmet";
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -169,6 +170,28 @@ const HomePage = () => {
   return (
     <>
       <div className="min-h-screen bg-gradient-to-br from-[#0b141a] via-[#0f1922] to-[#1a2332] text-white overflow-x-hidden">
+        <Helmet>
+          <title>Home | Snake Game Ultimate Edition</title>
+          <meta
+            name="description"
+            content="Play Snake Game Ultimate Edition and enjoy the classic gameplay with modern features."
+          />
+          <script type="application/ld+json">{`
+          {
+            "@context": "https://schema.org",
+            "@type": "Game",
+            "name": "Snake Game Ultimate Edition",
+            "url": "https://snake-game-classic.vercel.app/",
+            "genre": "Classic Snake, Arcade",
+            "image": "https://snake-game-classic.vercel.app/logo.png",
+            "author": {
+              "@type": "Person",
+              "name": "Nischay Bandodiya"
+            }
+          }
+        `}</script>
+        </Helmet>
+
         {/* Enhanced Hero Section */}
         <section className="relative overflow-hidden">
           {/* Dynamic Background Elements */}

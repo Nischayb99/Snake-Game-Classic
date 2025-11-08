@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://snake-game-classic.vercel.app/sitemap.xml
