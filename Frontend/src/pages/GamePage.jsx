@@ -1279,7 +1279,7 @@ const GamePage = () => {
           content="Play Snake Game Ultimate Edition and enjoy the classic gameplay with modern features."
         />
       </Helmet>
-      ;{/* Animated Background Elements */}
+      {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-green-500/5 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
