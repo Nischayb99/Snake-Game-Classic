@@ -1,3 +1,10 @@
 User-agent: *
 Allow: /
+
+Disallow: /dashboard
+Disallow: /profile
+Disallow: /edit-profile
+Disallow: /login
+Disallow: /signup
+
 Sitemap: https://snake-game-classic.vercel.app/sitemap.xml
